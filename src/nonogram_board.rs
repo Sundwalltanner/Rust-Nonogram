@@ -11,6 +11,7 @@ pub struct NonogramBoard {
     pub game_end: Option<DateTime<Utc>>,
     pub count_black: u8,
     pub goal_black: u8,
+    pub init_ratio: f64,
 }
 impl NonogramBoard {
     pub fn new() -> Self {
@@ -18,12 +19,28 @@ impl NonogramBoard {
             data: [[0; 10]; 10],
             goal_nums: [[[1; 5]; 10]; 2],
             current_nums: [[[0; 5]; 10]; 2],
-            game_start: Some(Utc::now()),
+            game_start: None,
             game_end: None,
             last_time: None,
             count_black: 0,
             goal_black: 0,
+            init_ratio: 0.5,
         }
+    }
+
+    pub fn check_win(&self) -> bool {
+        for j in 0..2 {
+            for k in 0..10 {
+                for i in 0..5 {
+                    let ch = self.goal_nums[j][k][i].to_string();
+                    if self.goal_nums[j][k][i] != self.current_nums[j][k][i] {
+                        return false;
+                    }
+                }
+            }
+        }
+        
+        true
     }
 
     /// Set cell value.
@@ -39,8 +56,11 @@ impl NonogramBoard {
             }
             self.data[ind[1]][ind[0]] = val;
         }
-
         self.current_nums = self.get_nums();
+
+        if self.check_win() {
+            self.game_end = Some(Utc::now());
+        }
     }
 
     /// Get cell value.
@@ -50,13 +70,22 @@ impl NonogramBoard {
 
     /// Setup randomly generated goal nonogram.
     pub fn set_goal(&mut self) {
-        let mut rng = Bernoulli::new(0.5).unwrap();
+        let mut rng = Bernoulli::new(self.init_ratio).unwrap();
         for row in 0..10 {
             for col in 0..10 {
                 if rng.sample(&mut rand::thread_rng()) {
                     self.data[row][col] = 1;
                     self.goal_black += 1;
                 }
+            }
+        }
+    }
+
+    /// Clear board and set all cells to default state.
+    pub fn wipe_board(&mut self) {
+        for row in 0..10 {
+            for col in 0..10 {
+                self.data[row][col] = 0;
             }
         }
     }
@@ -107,6 +136,8 @@ impl NonogramBoard {
     pub fn initialize(&mut self) -> Self {
         self.set_goal();
         self.goal_nums = self.get_nums();
+        self.wipe_board();
+        self.game_start = Some(Utc::now());
         Self { 
             data: self.data,
             goal_nums: self.goal_nums,
@@ -116,6 +147,7 @@ impl NonogramBoard {
             last_time: self.last_time,
             count_black: self.count_black,
             goal_black: self.count_black,
+            init_ratio: self.init_ratio,
         }
     }
 }

@@ -61,5 +61,9 @@ fn main() {
                 nonogram_view.draw(&nonogram_controller, glyphs, &c, g, dur, nonogram_controller.nonogram.count_black, nonogram.goal_black);
             });
         }
+        if let Some(end) = nonogram_controller.nonogram.game_end {
+            nonogram_controller.nonogram = nonogram_board::NonogramBoard::new();
+            nonogram_controller.nonogram.initialize();
+        }
     }
 }

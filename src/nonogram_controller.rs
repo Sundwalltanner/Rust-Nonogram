@@ -52,7 +52,7 @@ impl NonogramController {
                         self.nonogram.set([cell_x, cell_y], 2);
                     }
                 }
-            } 
+            }
         }
         if let Some(Button::Mouse(MouseButton::Left)) = e.press_args() {
             if let Some(ind) = self.selected_cell {
