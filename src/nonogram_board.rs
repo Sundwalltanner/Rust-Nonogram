@@ -54,13 +54,20 @@ impl NonogramBoard {
     }
 
     pub fn check_win(&self) -> bool {
-        for j in 0..2 {
-            for k in 0..10 {
-                for i in 0..5 {
-                    let ch = self.goal_nums[j][k][i].to_string();
-                    if self.goal_nums[j][k][i] != self.current_nums[j][k][i] {
-                        return false;
-                    }
+        // Check column nums.
+        for k in 0..self.dimensions[0] {
+            for i in 0..self.nums_per[0] as usize {
+                if self.goal_nums[0][k][i] != self.current_nums[0][k][i] {
+                    return false;
+                }
+            }
+        }
+
+        // Check row nums.
+        for k in 0..self.dimensions[1] {
+            for i in 0..self.nums_per[1] as usize {
+                if self.goal_nums[1][k][i] != self.current_nums[1][k][i] {
+                    return false;
                 }
             }
         }
@@ -124,7 +131,7 @@ impl NonogramBoard {
 
         // Get column nums.
         for col in 0..self.dimensions[0] {
-            let mut num_hint = (self.nums_per[1] - 1) as usize;
+            let mut num_hint = (self.nums_per[0] - 1) as usize;
             let mut filling = false;
             for row in 0..self.dimensions[1] {
                 if self.data[col][row] == 1 {
