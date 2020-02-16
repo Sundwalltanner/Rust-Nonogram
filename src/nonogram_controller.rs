@@ -40,7 +40,7 @@ impl NonogramController {
             let y = self.cursor_pos[1] - board_pos[1];
 
             // Check that coordinates are inside board boundaries.
-            if x >= 0.0 && x < size[0] && y >= 0.0 && y < size[1]{
+            if x >= 0.0 && x < size[0] && y >= 0.0 && y < size[1] {
                 // Compute the cell position.
                 let cell_x = (x / size[0] * self.nonogram.dimensions[0] as f64) as usize;
                 let cell_y = (y / size[1] * self.nonogram.dimensions[1] as f64) as usize;

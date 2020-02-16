@@ -6,8 +6,8 @@ pub struct NonogramBoard {
     pub dimensions: [usize; 2],
     pub data: Vec<Vec<u8>>,
     pub nums_per: [u64; 2],
-    pub goal_nums: Vec<Vec<Vec<u64>>>,
-    pub current_nums: Vec<Vec<Vec<u64>>>,
+    pub goal_nums: Vec<Vec<Vec<u8>>>,
+    pub current_nums: Vec<Vec<Vec<u8>>>,
     pub game_start: Option<DateTime<Utc>>,
     pub last_time: Option<DateTime<Utc>>,
     pub game_end: Option<DateTime<Utc>>,
@@ -48,8 +48,10 @@ impl NonogramBoard {
         self.nums_per[1] = (self.dimensions[0] as f64 / 2.0_f64).round() as u64;
 
         for i in 0..2 {
-            self.goal_nums.push(vec![vec![0; self.nums_per[i] as usize]; self.dimensions[i]]);
-            self.current_nums.push(vec![vec![0; self.nums_per[i] as usize]; self.dimensions[i]]);
+            self.goal_nums
+                .push(vec![vec![0; self.nums_per[i] as usize]; self.dimensions[i]]);
+            self.current_nums
+                .push(vec![vec![0; self.nums_per[i] as usize]; self.dimensions[i]]);
         }
     }
 
@@ -71,7 +73,7 @@ impl NonogramBoard {
                 }
             }
         }
-        
+
         true
     }
 
@@ -124,7 +126,7 @@ impl NonogramBoard {
 
     /// Find the current black box groupings in order to find correct values
     /// for numbers nearby columns and rows.
-    pub fn get_nums(&self) -> Vec<Vec<Vec<u64>>> {
+    pub fn get_nums(&self) -> Vec<Vec<Vec<u8>>> {
         let mut nums = vec![vec![vec![0; self.nums_per[0] as usize]; self.dimensions[0]]];
 
         nums.push(vec![vec![0; self.nums_per[1] as usize]; self.dimensions[1]]);
