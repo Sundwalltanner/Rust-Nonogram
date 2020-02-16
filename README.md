@@ -10,7 +10,7 @@ I've been bored riding the MAX for about two hours every day I have class, so I 
 First, install Rust by following the directions found here:
 https://www.rust-lang.org/tools/install
 
-Once you've got Rust properly installed, clone these repository, navigate to its directly on your machine, and enter this into your terminal:
+Once you've got Rust properly installed, clone this repository, navigate to its directly on your machine, and enter this into your terminal:
 
 ```
 cargo run
@@ -25,11 +25,13 @@ The controls are really basic:
 * ```Left Mouse Click``` - Fill box if clear. Clear box if not clear.
 * ```Right Mouse Click``` - Mark box if clear. Clear box if not clear.
 
-Marking boxes is simply for player convenience. Marked boxes are supposed to indicate which boxes you believe are definitely clear in the solution. You can reach the win condition without marking a single box, so long as you have the correct boxes filled.
+Marking boxes is simply for player convenience. Marked boxes are supposed to indicate which boxes you believe are definitely clear in the solution. You can reach the win condition without marking a single box as long as you have the correct boxes filled.
 
 These two mouse buttons can also be held down in order to fill/clear multiple boxes. They will maintain the same command that was executed on the first box for convenience. This means that if you press the left mouse button and your cursor is hovering over a cleared box, as long as you keep that left mouse button held down, any other cleared box your cursor hovers over will be filled. Anything besides cleared boxes won't be altered.
 
-This probably sounds confusing, and I'm sorry. It makes more sense when you play it. I borrowed this control setup from the Picross games on the Nintendo Switch, because they're my favorite version of this puzzle.
+This also means that commands are executed on mouse button down rather than on mouse button release.
+
+This probably sounds confusing, and I'm sorry. It makes more sense when you play it. I borrowed this control setup from the Picross games on the Nintendo Switch, because they're my favorite version of this puzzle. There are numerous versions of this online, but so far I haven't really found one that I like nearly as much as the Nintendo Switch games.
 
 ## How to play
 There are numbers near each column and row of the board. These numbers indicate sequences of filled in blocks. For example, take a look at the image below:
@@ -55,7 +57,9 @@ And here's an image of what it currently looks like when you start it, proving t
 
 ![Image of program running #2](https://i.imgur.com/DjNZi3A.png)
 
-Now that I've redone the data structures holding the board and its cells together, I can resize it by altering the ```dimensions``` variable in [nonogram_board.rs](https://github.com/Sundwalltanner/Rust-Nonogram/blob/master/src/nonogram_board.rs). Ultimately, I want this to be capable of being modified by the user using a drop down menu or something. And they'll hopefully be capable of generating a new board as well with a big "generate" button or something. Anyways, here's a picture of a solved 30x30 nonogram. It didn't take me 13 seconds to solve. I just didn't have it wiped after it generated a random goal state.
+Now that I've redone the data structures holding the board and its cells together, I can resize it by altering the ```dimensions``` variable in [nonogram_board.rs](https://github.com/Sundwalltanner/Rust-Nonogram/blob/master/src/nonogram_board.rs). Ultimately, I want this to be capable of being modified by the user using a drop down menu or something. And they'll hopefully be capable of generating a new board as well with a big "generate" button or something.
+
+Anyways, here's a picture of a solved 30x30 nonogram. It didn't take me 13 seconds to solve. I just didn't have it wiped after it generated a random goal state.
 
 ![Image of program running #3](https://i.imgur.com/iIO3wDv.png)
 
