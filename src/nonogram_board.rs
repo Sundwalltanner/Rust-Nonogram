@@ -44,8 +44,8 @@ impl NonogramBoard {
             self.data.push(vec![0; self.dimensions[1]]);
         }
 
-        self.nums_per[0] = (self.dimensions[0] as f64 / 2.0_f64).round() as u64;
-        self.nums_per[1] = (self.dimensions[1] as f64 / 2.0_f64).round() as u64;
+        self.nums_per[0] = (self.dimensions[1] as f64 / 2.0_f64).round() as u64;
+        self.nums_per[1] = (self.dimensions[0] as f64 / 2.0_f64).round() as u64;
 
         for i in 0..2 {
             self.goal_nums.push(vec![vec![0; self.nums_per[i] as usize]; self.dimensions[i]]);
