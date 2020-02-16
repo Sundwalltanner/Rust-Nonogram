@@ -135,7 +135,8 @@ impl NonogramView {
         }
 
         // Draw column and row hint numbers.
-        let text = Text::new_color(hex("ffffff"), 15);
+        let hint_reg = Text::new_color(hex("ffffff"), 15);
+        let hint_cross = Text::new_color(hex("666666"), 15);
         let mut ch_x = 0.0;
         let mut ch_y = 0.0;
 
@@ -143,12 +144,18 @@ impl NonogramView {
         for k in 0..controller.nonogram.dimensions[0] as usize {
             let mut num_pos = 0;
             for i in 0..controller.nonogram.nums_per[0] as usize {
-                let ch = controller.nonogram.goal_nums[0][k][i].to_string();
+                let hint_val = controller.nonogram.goal_nums[0][k][i];
+                let ch = hint_val.abs().to_string();
                 if ch != "0" {
                     ch_x = settings.position[1] + k as f64 * settings.cell_size + 75.0;
                     ch_y = settings.position[0] - num_pos as f64 * 20.0 - 80.0;
-                    text.draw(&ch, glyphs, &c.draw_state, c.transform.trans(ch_x, ch_y), g)
-                        .unwrap_or_else(|_| panic!("text draw failed"));
+                    if hint_val > 0 {
+                        hint_reg.draw(&ch, glyphs, &c.draw_state, c.transform.trans(ch_x, ch_y), g)
+                            .unwrap_or_else(|_| panic!("text draw failed"));
+                    } else {
+                        hint_cross.draw(&ch, glyphs, &c.draw_state, c.transform.trans(ch_x, ch_y), g)
+                            .unwrap_or_else(|_| panic!("text draw failed"));
+                    }
                     num_pos += 1;
                 }
             }
@@ -158,12 +165,18 @@ impl NonogramView {
         for k in 0..controller.nonogram.dimensions[1] as usize {
             let mut num_pos = 0;
             for i in 0..controller.nonogram.nums_per[1] as usize {
-                let ch = controller.nonogram.goal_nums[1][k][i].to_string();
+                let hint_val = controller.nonogram.goal_nums[1][k][i];
+                let ch = hint_val.abs().to_string();
                 if ch != "0" {
                     ch_x = settings.position[0] - num_pos as f64 * 20.0 - 25.0;
                     ch_y = settings.position[1] + k as f64 * settings.cell_size + 30.0;
-                    text.draw(&ch, glyphs, &c.draw_state, c.transform.trans(ch_x, ch_y), g)
-                        .unwrap_or_else(|_| panic!("text draw failed"));
+                    if hint_val > 0 {
+                        hint_reg.draw(&ch, glyphs, &c.draw_state, c.transform.trans(ch_x, ch_y), g)
+                            .unwrap_or_else(|_| panic!("text draw failed"));
+                    } else {
+                        hint_cross.draw(&ch, glyphs, &c.draw_state, c.transform.trans(ch_x, ch_y), g)
+                            .unwrap_or_else(|_| panic!("text draw failed"));
+                    }
                     num_pos += 1;
                 }
             }

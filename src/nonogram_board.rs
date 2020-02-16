@@ -6,8 +6,8 @@ pub struct NonogramBoard {
     pub dimensions: [usize; 2],
     pub data: Vec<Vec<u8>>,
     pub nums_per: [u64; 2],
-    pub goal_nums: Vec<Vec<Vec<u8>>>,
-    pub current_nums: Vec<Vec<Vec<u8>>>,
+    pub goal_nums: Vec<Vec<Vec<i8>>>,
+    pub current_nums: Vec<Vec<Vec<i8>>>,
     pub game_start: Option<DateTime<Utc>>,
     pub last_time: Option<DateTime<Utc>>,
     pub game_end: Option<DateTime<Utc>>,
@@ -91,6 +91,7 @@ impl NonogramBoard {
             self.data[ind[0]][ind[1]] = val;
         }
         self.current_nums = self.get_nums();
+        self.update_crossouts();
 
         if self.check_win() {
             self.game_end = Some(Utc::now());
@@ -126,7 +127,7 @@ impl NonogramBoard {
 
     /// Find the current black box groupings in order to find correct values
     /// for numbers nearby columns and rows.
-    pub fn get_nums(&self) -> Vec<Vec<Vec<u8>>> {
+    pub fn get_nums(&self) -> Vec<Vec<Vec<i8>>> {
         let mut nums = vec![vec![vec![0; self.nums_per[0] as usize]; self.dimensions[0]]];
 
         nums.push(vec![vec![0; self.nums_per[1] as usize]; self.dimensions[1]]);
@@ -173,6 +174,60 @@ impl NonogramBoard {
             }
         }
         nums
+    }
+
+    pub fn update_crossouts(&mut self) {
+        /*
+        let mut filled = true;
+        let mut num_hint = 0;
+
+        // Get column nums.
+        for col in 0..self.dimensions[0] {
+            for row in 0..self.dimensions[1] {
+                if self.data[col][row] == 1 {
+                    if(num_hint < self.nums_per[0]) {
+                        for i in 0..self.current_nums[0][col][num_hint].abs() {
+                            if()
+                        }
+                    }
+                    if filling == false {
+                        filling = true;
+                    }
+                    nums[0][col][num_hint] += 1;
+                } else {
+                    if filling {
+                        filling = false;
+                        if num_hint != 0 {
+                            num_hint -= 1;
+                        }
+                    }
+                }
+            }
+        }
+        */
+
+        /*
+        // Get row nums.
+        for row in 0..self.dimensions[1] {
+            let mut num_hint = (self.nums_per[1] - 1) as usize;
+            let mut filling = false;
+            for col in 0..self.dimensions[0] {
+                if self.data[col][row] == 1 {
+                    if filling == false {
+                        filling = true;
+                    }
+                    nums[1][row][num_hint] += 1;
+                } else {
+                    if filling {
+                        filling = false;
+                        if num_hint != 0 {
+                            num_hint -= 1;
+                        }
+                    }
+                }
+            }
+        }
+        */
     }
 
     /// Initialize nonogram board.
