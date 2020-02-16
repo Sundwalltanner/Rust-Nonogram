@@ -5,14 +5,14 @@ use rand::distributions::{Bernoulli, Distribution};
 pub struct NonogramBoard {
     pub dimensions: [usize; 2],
     pub data: Vec<Vec<u8>>,
-    pub nums_per: [u8; 2],
-    pub goal_nums: Vec<Vec<Vec<u8>>>,
-    pub current_nums: Vec<Vec<Vec<u8>>>,
+    pub nums_per: [u64; 2],
+    pub goal_nums: Vec<Vec<Vec<u64>>>,
+    pub current_nums: Vec<Vec<Vec<u64>>>,
     pub game_start: Option<DateTime<Utc>>,
     pub last_time: Option<DateTime<Utc>>,
     pub game_end: Option<DateTime<Utc>>,
-    pub count_black: u8,
-    pub goal_black: u8,
+    pub count_black: u64,
+    pub goal_black: u64,
     pub init_ratio: f64,
 }
 
@@ -44,8 +44,8 @@ impl NonogramBoard {
             self.data.push(vec![0; self.dimensions[1]]);
         }
 
-        self.nums_per[0] = (self.dimensions[0] as f64 / 2.0_f64).round() as u8;
-        self.nums_per[1] = (self.dimensions[1] as f64 / 2.0_f64).round() as u8;
+        self.nums_per[0] = (self.dimensions[0] as f64 / 2.0_f64).round() as u64;
+        self.nums_per[1] = (self.dimensions[1] as f64 / 2.0_f64).round() as u64;
 
         for i in 0..2 {
             self.goal_nums.push(vec![vec![0; self.nums_per[i] as usize]; self.dimensions[i]]);
@@ -117,14 +117,15 @@ impl NonogramBoard {
 
     /// Find the current black box groupings in order to find correct values
     /// for numbers nearby columns and rows.
-    pub fn get_nums(&self) -> Vec<Vec<Vec<u8>>> {
+    pub fn get_nums(&self) -> Vec<Vec<Vec<u64>>> {
         let mut nums = vec![vec![vec![0; self.nums_per[0] as usize]; self.dimensions[0]]];
-        let mut filling = false;
 
         nums.push(vec![vec![0; self.nums_per[1] as usize]; self.dimensions[1]]);
 
+        // Get column nums.
         for col in 0..self.dimensions[0] {
-            let mut num_hint = (self.nums_per[0] - 1) as usize;
+            let mut num_hint = (self.nums_per[1] - 1) as usize;
+            let mut filling = false;
             for row in 0..self.dimensions[1] {
                 if self.data[col][row] == 1 {
                     if filling == false {
@@ -142,8 +143,10 @@ impl NonogramBoard {
             }
         }
 
+        // Get row nums.
         for row in 0..self.dimensions[1] {
             let mut num_hint = (self.nums_per[1] - 1) as usize;
+            let mut filling = false;
             for col in 0..self.dimensions[0] {
                 if self.data[col][row] == 1 {
                     if filling == false {

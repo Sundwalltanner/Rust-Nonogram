@@ -87,8 +87,8 @@ impl NonogramView {
         c: &Context,
         g: &mut G,
         duration: Duration,
-        count_black: u8,
-        goal_black: u8,
+        count_black: u64,
+        goal_black: u64,
     ) where
         C: CharacterCache<Texture = G::Texture>,
     {
@@ -144,6 +144,8 @@ impl NonogramView {
         let text = Text::new_color(hex("ffffff"), 15);
         let mut ch_x = 0.0;
         let mut ch_y = 0.0;
+
+        // Draw column numbers.
         for k in 0..controller.nonogram.dimensions[0] as usize {
             let mut num_pos = 0;
             for i in 0..controller.nonogram.nums_per[0] as usize {
@@ -164,13 +166,14 @@ impl NonogramView {
             }
         }
 
+        // Draw row numbers.
         for k in 0..controller.nonogram.dimensions[1] as usize {
             let mut num_pos = 0;
             for i in 0..controller.nonogram.nums_per[1] as usize {
                 let ch = controller.nonogram.goal_nums[1][k][i].to_string();
                 if ch != "0" {
                     ch_x = settings.position[0] - num_pos as f64 * 20.0 - 25.0;
-                    ch_y = settings.position[1] + k as f64 * settings.cell_size + 25.0;
+                    ch_y = settings.position[1] + k as f64 * settings.cell_size + 30.0;
                     text.draw(
                         &ch,
                         glyphs,
