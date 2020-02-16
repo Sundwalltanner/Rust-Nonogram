@@ -15,7 +15,7 @@ And here's an image of what it currently looks like when you start it, proving t
 
 ![Image of program running #2](https://i.imgur.com/DjNZi3A.png)
 
-Now that I've redone the data structures holding the board and its cells together, I can resize it by altering the ```dimensions``` variable in [nonogram_board.rs](https://github.com/Sundwalltanner/Rust-Nonogram/blob/master/src/nonogram_board.rs). Ultimately, I want this to be capable of being modified by the user using a drop down menu or something. And they'll hopefully be capable of generating a new board as well with a big "generate" button or something. Anyways, here's a picture of a solved 30x30 nonogram. It didn't take me 8 seconds to solve. I just didn't have it wiped after it generated a random goal state.
+Now that I've redone the data structures holding the board and its cells together, I can resize it by altering the ```dimensions``` variable in [nonogram_board.rs](https://github.com/Sundwalltanner/Rust-Nonogram/blob/master/src/nonogram_board.rs). Ultimately, I want this to be capable of being modified by the user using a drop down menu or something. And they'll hopefully be capable of generating a new board as well with a big "generate" button or something. Anyways, here's a picture of a solved 30x30 nonogram. It didn't take me 13 seconds to solve. I just didn't have it wiped after it generated a random goal state.
 
 ![Image of program running #3](https://i.imgur.com/iIO3wDv.png)
 
