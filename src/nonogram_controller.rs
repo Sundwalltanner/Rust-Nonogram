@@ -29,7 +29,7 @@ impl NonogramController {
     }
 
     /// Handles events.
-    pub fn event<E: GenericEvent>(&mut self, board_pos: [f64; 2], size: f64, e: &E) {
+    pub fn event<E: GenericEvent>(&mut self, board_pos: [f64; 2], size: [f64; 2], e: &E) {
         use piston::input::{Button, Key, MouseButton};
 
         if let Some(pos) = e.mouse_cursor_args() {
@@ -40,10 +40,10 @@ impl NonogramController {
             let y = self.cursor_pos[1] - board_pos[1];
 
             // Check that coordinates are inside board boundaries.
-            if x >= 0.0 && x < size && y >= 0.0 && y < size {
+            if x >= 0.0 && x < size[0] && y >= 0.0 && y < size[1]{
                 // Compute the cell position.
-                let cell_x = (x / size * 10.0) as usize;
-                let cell_y = (y / size * 10.0) as usize;
+                let cell_x = (x / size[0] * self.nonogram.dimensions[0] as f64) as usize;
+                let cell_y = (y / size[1] * self.nonogram.dimensions[1] as f64) as usize;
                 self.selected_cell = Some([cell_x, cell_y]);
                 if self.nonogram.get([cell_x, cell_y]) == self.current_action {
                     if self.mouse_d[0] == true {

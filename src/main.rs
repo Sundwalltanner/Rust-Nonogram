@@ -24,10 +24,10 @@ fn main() {
 
     let mut events = Events::new(EventSettings::new().lazy(true));
     let mut gl = GlGraphics::new(opengl);
-
     let mut nonogram = NonogramBoard::new();
-    let mut nonogram_controller = NonogramController::new(nonogram.initialize());
-    let nonogram_view_settings = NonogramViewSettings::new();
+    nonogram.initialize();
+    let mut nonogram_controller = NonogramController::new(nonogram);
+    let mut nonogram_view_settings = NonogramViewSettings::new(nonogram_controller.nonogram.dimensions);
     let nonogram_view = NonogramView::new(nonogram_view_settings);
     
     use piston::Window;
@@ -44,7 +44,7 @@ fn main() {
     while let Some(e) = events.next(&mut window) {
         nonogram_controller.event(
             nonogram_view.settings.position,
-            nonogram_view.settings.size,
+            nonogram_view.settings.board_dimensions,
             &e,
         );
         if let Some(args) = e.render_args() {
@@ -58,7 +58,7 @@ fn main() {
                     None => Duration::seconds(0),
                 };
                 clear(hex("222222"), g);
-                nonogram_view.draw(&nonogram_controller, glyphs, &c, g, dur, nonogram_controller.nonogram.count_black, nonogram.goal_black);
+                nonogram_view.draw(&nonogram_controller, glyphs, &c, g, dur, nonogram_controller.nonogram.count_black, nonogram_controller.nonogram.goal_black);
             });
         }
         if let Some(end) = nonogram_controller.nonogram.game_end {

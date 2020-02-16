@@ -11,7 +11,9 @@ use crate::NonogramController;
 pub struct NonogramViewSettings {
     pub position: [f64; 2],
     pub size: f64,
-    pub cell_count: [u32; 2],
+    pub board_dimensions: [f64; 2],
+    pub cell_dimensions: [usize; 2],
+    pub cell_size: f64,
     pub background_color: Color,
     pub border_color: Color,
     pub board_edge_color: Color,
@@ -30,11 +32,13 @@ pub struct NonogramViewSettings {
 
 impl NonogramViewSettings {
     /// Creates new nonogram view settings.
-    pub fn new() -> NonogramViewSettings {
-        NonogramViewSettings {
+    pub fn new(new_cell_dimensions: [usize; 2]) -> NonogramViewSettings {
+        let mut view_settings = NonogramViewSettings {
             position: [300.0, 240.0],
-            size: 600.0,
-            cell_count: [10; 2],
+            size: 1000.0,
+            board_dimensions: [0.0; 2],
+            cell_dimensions: [new_cell_dimensions[0], new_cell_dimensions[1]],
+            cell_size: 0.0,
             background_color: hex("f7f5f6"),
             border_color: hex("cccccc"),
             board_edge_color: hex("cccccc"),
@@ -49,7 +53,17 @@ impl NonogramViewSettings {
             filled_cell_background_color: hex("353235"),
             marked_cell_background_color: hex("f77b00"),
             text_color: hex("ffffff"),
-        }
+        };
+        view_settings.calc_dimensions();
+        view_settings
+    }
+
+    fn calc_dimensions(&mut self) {
+        let cols = self.cell_dimensions[0] as f64;
+        let rows = self.cell_dimensions[1] as f64;
+        self.board_dimensions[0] = (cols / (cols + rows)) * self.size;
+        self.board_dimensions[1] = (rows / (cols + rows)) * self.size;
+        self.cell_size = self.board_dimensions[0] / cols;
     }
 }
 
@@ -85,25 +99,24 @@ impl NonogramView {
         let board_rect = [
             settings.position[0],
             settings.position[1],
-            settings.size,
-            settings.size,
+            settings.board_dimensions[0],
+            settings.board_dimensions[1],
         ];
 
         // Draw board background.
         Rectangle::new(settings.background_color).draw(board_rect, &c.draw_state, c.transform, g);
 
         // Draw filled cell background.
-        let cell_size = settings.size / settings.cell_count[0] as f64;
-        for j in 0..10 {
-            for i in 0..10 {
-                let value = controller.nonogram.get([i, j]);
+        for j in 0..settings.cell_dimensions[0] {
+            for i in 0..settings.cell_dimensions[1] {
+                let value = controller.nonogram.get([j, i]);
                 if value == 1 {
-                    let pos = [i as f64 * cell_size, j as f64 * cell_size];
+                    let pos = [j as f64 * settings.cell_size, i as f64 * settings.cell_size];
                     let cell_rect = [
                         settings.position[0] + pos[0],
                         settings.position[1] + pos[1],
-                        cell_size,
-                        cell_size,
+                        settings.cell_size,
+                        settings.cell_size,
                     ];
                     Rectangle::new(settings.filled_cell_background_color).draw(
                         cell_rect,
@@ -113,8 +126,8 @@ impl NonogramView {
                     );
                 } else if value == 2 {
                     let text = Text::new_color(settings.marked_cell_background_color, 40);
-                    let ch_x = settings.position[0] + i as f64 * cell_size + 20.0;
-                    let ch_y = settings.position[1] + j as f64 * cell_size + 40.0;
+                    let ch_x = settings.position[0] + j as f64 * settings.cell_size + 10.0;
+                    let ch_y = settings.position[1] + i as f64 * settings.cell_size + 30.0;
                     text.draw(
                         "x",
                         glyphs,
@@ -129,58 +142,70 @@ impl NonogramView {
 
         // Draw column and row hint numbers.
         let text = Text::new_color(hex("ffffff"), 15);
-        let cell_size = settings.size / settings.cell_count[0] as f64;
         let mut ch_x = 0.0;
         let mut ch_y = 0.0;
-        for j in 0..2 {
-            for k in 0..10 {
-                let mut num_pos = 0;
-                for i in 0..5 {
-                    let ch = controller.nonogram.goal_nums[j][k][i].to_string();
-                    if ch != "0" {
-                        if j == 0 {
-                            ch_x = settings.position[0] - num_pos as f64 * 20.0 - 25.0;
-                            ch_y = settings.position[1] + k as f64 * cell_size + 35.0;
-                        } else {
-                            ch_x = settings.position[1] + k as f64 * cell_size + 85.0;
-                            ch_y = settings.position[0] - num_pos as f64 * 20.0 - 80.0;
-                        }
-                        text.draw(
-                            &ch,
-                            glyphs,
-                            &c.draw_state,
-                            c.transform.trans(ch_x, ch_y),
-                            g,
-                        )
-                        .unwrap_or_else(|_| panic!("text draw failed"));
-                        num_pos += 1;
-                    }
+        for k in 0..controller.nonogram.dimensions[0] as usize {
+            let mut num_pos = 0;
+            for i in 0..controller.nonogram.nums_per[0] as usize {
+                let ch = controller.nonogram.goal_nums[0][k][i].to_string();
+                if ch != "0" {
+                    ch_x = settings.position[1] + k as f64 * settings.cell_size + 75.0;
+                    ch_y = settings.position[0] - num_pos as f64 * 20.0 - 80.0;
+                    text.draw(
+                        &ch,
+                        glyphs,
+                        &c.draw_state,
+                        c.transform.trans(ch_x, ch_y),
+                        g,
+                    )
+                    .unwrap_or_else(|_| panic!("text draw failed"));
+                    num_pos += 1;
+                }
+            }
+        }
+
+        for k in 0..controller.nonogram.dimensions[1] as usize {
+            let mut num_pos = 0;
+            for i in 0..controller.nonogram.nums_per[1] as usize {
+                let ch = controller.nonogram.goal_nums[1][k][i].to_string();
+                if ch != "0" {
+                    ch_x = settings.position[0] - num_pos as f64 * 20.0 - 25.0;
+                    ch_y = settings.position[1] + k as f64 * settings.cell_size + 25.0;
+                    text.draw(
+                        &ch,
+                        glyphs,
+                        &c.draw_state,
+                        c.transform.trans(ch_x, ch_y),
+                        g,
+                    )
+                    .unwrap_or_else(|_| panic!("text draw failed"));
+                    num_pos += 1;
                 }
             }
         }
 
         // Draw cell borders.
         let cell_edge = Line::new(settings.cell_edge_color, settings.cell_edge_radius);
-        for i in 0..settings.cell_count[0] {
+        for i in 0..controller.nonogram.dimensions[0] {
             // Skip lines that are covered by sections.
             if (i % 5) == 0 {
                 continue;
             }
 
-            let x = settings.position[0] + i as f64 / settings.cell_count[0] as f64 * settings.size;
-            let y2 = settings.position[1] + settings.size;
+            let x = settings.position[0] + i as f64 / controller.nonogram.dimensions[0] as f64 * settings.cell_size * controller.nonogram.dimensions[0] as f64;
+            let y2 = settings.position[1] + settings.cell_size * controller.nonogram.dimensions[1] as f64;
 
             let vline = [x, settings.position[1], x, y2];
             cell_edge.draw(vline, &c.draw_state, c.transform, g);
         }
-        for i in 0..settings.cell_count[1] {
+        for i in 0..controller.nonogram.dimensions[1] {
             // Skip lines that are covered by sections.
             if (i % 5) == 0 {
                 continue;
             }
 
-            let y = settings.position[1] + i as f64 / settings.cell_count[1] as f64 * settings.size;
-            let x2 = settings.position[0] + settings.size;
+            let y = settings.position[1] + i as f64 / controller.nonogram.dimensions[1] as f64 * settings.cell_size * controller.nonogram.dimensions[1] as f64;
+            let x2 = settings.position[0] + settings.cell_size * controller.nonogram.dimensions[0] as f64;
 
             let hline = [settings.position[0], y, x2, y];
             cell_edge.draw(hline, &c.draw_state, c.transform, g);
@@ -188,18 +213,18 @@ impl NonogramView {
 
         // Draw section borders.
         let section_edge = Line::new(settings.section_edge_color, settings.section_edge_radius);
-        for i in 1..((settings.cell_count[0] / 5)) {
+        for i in 1..((controller.nonogram.dimensions[0] / 5)) {
             // Set up coordinates.
-            let x = settings.position[0] + i as f64 / (settings.cell_count[0] / 5) as f64 * settings.size;
-            let y2 = settings.position[1] + settings.size;
+            let x = settings.position[0] + i as f64 / (controller.nonogram.dimensions[0] / 5) as f64 * settings.cell_size * controller.nonogram.dimensions[0] as f64;
+            let y2 = settings.position[1] + settings.cell_size * controller.nonogram.dimensions[1] as f64;
 
             let vline = [x, settings.position[1], x, y2];
             section_edge.draw(vline, &c.draw_state, c.transform, g);
         }
-        for i in 1..((settings.cell_count[1] / 5)) {
+        for i in 1..((controller.nonogram.dimensions[1] / 5)) {
             // Set up coordinates.
-            let y = settings.position[1] + i as f64 / (settings.cell_count[1] / 5) as f64 * settings.size;
-            let x2 = settings.position[0] + settings.size;
+            let y = settings.position[1] + i as f64 / (controller.nonogram.dimensions[1] / 5) as f64 * settings.cell_size * controller.nonogram.dimensions[1] as f64;
+            let x2 = settings.position[0] + settings.cell_size * controller.nonogram.dimensions[0] as f64;
 
             let hline = [settings.position[0], y, x2, y];
             section_edge.draw(hline, &c.draw_state, c.transform, g);
@@ -230,7 +255,7 @@ impl NonogramView {
 
         // Draw nonogram title.
         Text::new_color(hex("ffffff"), 25).draw(
-            &"NONOGRAM".to_string(),
+            &"NONOGRAM",
             glyphs,
             &c.draw_state,
             c.transform.trans(80.0, 60.0),
@@ -240,7 +265,7 @@ impl NonogramView {
 
         // Draw progress title.
         Text::new_color(hex("ffffff"), 12).draw(
-            &"PROGRESS".to_string(),
+            &"PROGRESS",
             glyphs,
             &c.draw_state,
             c.transform.trans(115.0, 95.0),
@@ -266,7 +291,7 @@ impl NonogramView {
 
         // Draw timer title.
         Text::new_color(hex("ffffff"), 12).draw(
-            &"TIMER".to_string(),
+            &"TIMER",
             glyphs,
             &c.draw_state,
             c.transform.trans(125.0, 160.0),
@@ -286,13 +311,12 @@ impl NonogramView {
 
         // Draw selected cell border.
         if let Some(ind) = controller.selected_cell {
-            let cell_size = settings.size / settings.cell_count[0] as f64;
-            let pos = [ind[0] as f64 * cell_size, ind[1] as f64 * cell_size];
+            let pos = [ind[0] as f64 * settings.cell_size, ind[1] as f64 * settings.cell_size];
             let cell_rect = [
                 settings.position[0] + pos[0],
                 settings.position[1] + pos[1],
-                cell_size,
-                cell_size,
+                settings.cell_size,
+                settings.cell_size,
             ];
             Rectangle::new_round_border(settings.selected_cell_border_color, settings.selected_cell_border_round_radius, settings.selected_cell_border_radius).draw(
                 cell_rect,

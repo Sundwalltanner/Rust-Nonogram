@@ -1,11 +1,13 @@
 use chrono::{DateTime, Duration, Utc};
 use rand::distributions::{Bernoulli, Distribution};
-#[derive(Debug, Clone, Copy, PartialEq)]
 
+//#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct NonogramBoard {
-    pub data: [[u8; 10]; 10],
-    pub goal_nums: [[[u8; 5]; 10]; 2],
-    pub current_nums: [[[u8; 5]; 10]; 2],
+    pub dimensions: [usize; 2],
+    pub data: Vec<Vec<u8>>,
+    pub nums_per: [u8; 2],
+    pub goal_nums: Vec<Vec<Vec<u8>>>,
+    pub current_nums: Vec<Vec<Vec<u8>>>,
     pub game_start: Option<DateTime<Utc>>,
     pub last_time: Option<DateTime<Utc>>,
     pub game_end: Option<DateTime<Utc>>,
@@ -13,18 +15,41 @@ pub struct NonogramBoard {
     pub goal_black: u8,
     pub init_ratio: f64,
 }
+
 impl NonogramBoard {
-    pub fn new() -> Self {
-        Self { 
-            data: [[0; 10]; 10],
-            goal_nums: [[[1; 5]; 10]; 2],
-            current_nums: [[[0; 5]; 10]; 2],
+    pub fn new() -> NonogramBoard {
+        let mut board = NonogramBoard {
+            dimensions: [15, 10],
+            data: vec![vec![]],
+            nums_per: [0; 2],
+            goal_nums: vec![vec![vec![]]],
+            current_nums: vec![vec![vec![]]],
             game_start: None,
             game_end: None,
             last_time: None,
             count_black: 0,
             goal_black: 0,
             init_ratio: 0.5,
+        };
+        board.init_vecs();
+        board
+    }
+
+    fn init_vecs(&mut self) {
+        self.data.clear();
+        self.goal_nums.clear();
+        self.current_nums.clear();
+
+        for col in 0..self.dimensions[0] {
+            self.data.push(vec![0; self.dimensions[1]]);
+        }
+
+        self.nums_per[0] = (self.dimensions[0] as f64 / 2.0_f64).round() as u8;
+        self.nums_per[1] = (self.dimensions[1] as f64 / 2.0_f64).round() as u8;
+
+        for i in 0..2 {
+            self.goal_nums.push(vec![vec![0; self.nums_per[i] as usize]; self.dimensions[i]]);
+            self.current_nums.push(vec![vec![0; self.nums_per[i] as usize]; self.dimensions[i]]);
         }
     }
 
@@ -45,16 +70,16 @@ impl NonogramBoard {
 
     /// Set cell value.
     pub fn set(&mut self, ind: [usize; 2], val: u8) {
-        if self.data[ind[1]][ind[0]] != 0 {
-            if self.data[ind[1]][ind[0]] == 1 && self.count_black != 0 {
+        if self.data[ind[0]][ind[1]] != 0 {
+            if self.data[ind[0]][ind[1]] == 1 && self.count_black != 0 {
                 self.count_black -= 1;
             }
-            self.data[ind[1]][ind[0]] = 0;
+            self.data[ind[0]][ind[1]] = 0;
         } else {
             if val == 1 {
                 self.count_black += 1;
             }
-            self.data[ind[1]][ind[0]] = val;
+            self.data[ind[0]][ind[1]] = val;
         }
         self.current_nums = self.get_nums();
 
@@ -65,16 +90,16 @@ impl NonogramBoard {
 
     /// Get cell value.
     pub fn get(&self, ind: [usize; 2]) -> u8 {
-        self.data[ind[1]][ind[0]]
+        self.data[ind[0]][ind[1]]
     }
 
     /// Setup randomly generated goal nonogram.
     pub fn set_goal(&mut self) {
         let mut rng = Bernoulli::new(self.init_ratio).unwrap();
-        for row in 0..10 {
-            for col in 0..10 {
+        for col in 0..self.dimensions[0] {
+            for row in 0..self.dimensions[1] {
                 if rng.sample(&mut rand::thread_rng()) {
-                    self.data[row][col] = 1;
+                    self.data[col][row] = 1;
                     self.goal_black += 1;
                 }
             }
@@ -83,48 +108,54 @@ impl NonogramBoard {
 
     /// Clear board and set all cells to default state.
     pub fn wipe_board(&mut self) {
-        for row in 0..10 {
-            for col in 0..10 {
-                self.data[row][col] = 0;
+        for col in 0..self.dimensions[0] {
+            for row in 0..self.dimensions[1] {
+                self.data[col][row] = 0;
             }
         }
     }
 
     /// Find the current black box groupings in order to find correct values
     /// for numbers nearby columns and rows.
-    pub fn get_nums(&self) -> [[[u8; 5]; 10]; 2] {
-        let mut nums = [[[0; 5]; 10]; 2];
+    pub fn get_nums(&self) -> Vec<Vec<Vec<u8>>> {
+        let mut nums = vec![vec![vec![0; self.nums_per[0] as usize]; self.dimensions[0]]];
         let mut filling = false;
 
-        for row in 0..10 {
-            let mut num_hint = 4;
-            for col in 0..10 {
-                if self.data[row][col] == 1 {
+        nums.push(vec![vec![0; self.nums_per[1] as usize]; self.dimensions[1]]);
+
+        for col in 0..self.dimensions[0] {
+            let mut num_hint = (self.nums_per[0] - 1) as usize;
+            for row in 0..self.dimensions[1] {
+                if self.data[col][row] == 1 {
                     if filling == false {
                         filling = true;
                     }
-                    nums[0][row][num_hint] += 1;
+                    nums[0][col][num_hint] += 1;
                 } else {
                     if filling {
                         filling = false;
-                        num_hint -= 1;
+                        if num_hint != 0 {
+                            num_hint -= 1;
+                        }
                     }
                 }
             }
         }
 
-        for col in 0..10 {
-            let mut num_hint = 4;
-            for row in 0..10 {
-                if self.data[row][col] == 1 {
+        for row in 0..self.dimensions[1] {
+            let mut num_hint = (self.nums_per[1] - 1) as usize;
+            for col in 0..self.dimensions[0] {
+                if self.data[col][row] == 1 {
                     if filling == false {
                         filling = true;
                     }
-                    nums[1][col][num_hint] += 1;
+                    nums[1][row][num_hint] += 1;
                 } else {
                     if filling {
                         filling = false;
-                        num_hint -= 1;
+                        if num_hint != 0 {
+                            num_hint -= 1;
+                        }
                     }
                 }
             }
@@ -133,21 +164,10 @@ impl NonogramBoard {
     }
 
     /// Initialize nonogram board.
-    pub fn initialize(&mut self) -> Self {
+    pub fn initialize(&mut self) {
         self.set_goal();
         self.goal_nums = self.get_nums();
-        self.wipe_board();
+        //self.wipe_board();
         self.game_start = Some(Utc::now());
-        Self { 
-            data: self.data,
-            goal_nums: self.goal_nums,
-            current_nums: self.current_nums,
-            game_start: self.game_start,
-            game_end: self.game_end,
-            last_time: self.last_time,
-            count_black: self.count_black,
-            goal_black: self.count_black,
-            init_ratio: self.init_ratio,
-        }
     }
 }
