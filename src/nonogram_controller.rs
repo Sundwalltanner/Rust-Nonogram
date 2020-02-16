@@ -52,6 +52,8 @@ impl NonogramController {
                         self.nonogram.set([cell_x, cell_y], 2);
                     }
                 }
+            } else {
+                self.selected_cell = None;
             }
         }
         if let Some(Button::Mouse(MouseButton::Left)) = e.press_args() {
