@@ -6,14 +6,18 @@ Nonograms, sometimes referred to as Picross, are a type of picture-based numbers
 ## Why?
 I've been bored riding the MAX for about two hours every day I have class, so I was looking for an entertaining Nintendo Switch game to play. I ended up stumbling across Picross (get it?). A video game developer named Jupiter has made like 100 different Picross games, most of which are exclusive to the Nintendo 3DS. I couldn't ever really get into Sudoku, so I don't really know how similar the two are. It's incredibly addicting though, and it seemed like something I'd be capable of creating in Rust.
 
-## How do you play?
+## Early Access
 This is currently in development. In the meantime, here's a gif of it running:
 
 ![Gif of program running #1](https://i.imgur.com/MrIILoa.gif)
 
 And here's an image of what it currently looks like when you start it, proving that it's generating the numbers for the columns and rows based on the randomly generated solution:
 
-![Image of program running #1](https://i.imgur.com/DjNZi3A.png)
+![Image of program running #2](https://i.imgur.com/DjNZi3A.png)
+
+Now that I've redone the data structures holding the board and its cells together, I can resize it by altering the ```dimensions``` variable in [nonogram_board.rs](https://github.com/Sundwalltanner/Rust-Nonogram/blob/master/src/nonogram_board.rs). Ultimately, I want this to be capable of being modified by the user using a drop down menu or something. And they'll hopefully be capable of generating a new board as well with a big "generate" button or something. Anyways, here's a picture of a solved 30x30 nonogram. It didn't take me 8 seconds to solve. I just didn't have it wiped after it generated a random goal state.
+
+![Image of program running #3](https://i.imgur.com/iIO3wDv.png)
 
 ## What are you still working on?
 This isn't due for a few more weeks, so I've probably got plenty of time to hit these stretch goals:
