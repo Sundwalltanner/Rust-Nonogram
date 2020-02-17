@@ -61,7 +61,7 @@ impl NonogramBoard {
         // Check column nums.
         for k in 0..self.dimensions[0] {
             for i in 0..self.nums_per[0] as usize {
-                if self.goal_nums[0][k][i] != self.current_nums[0][k][i] {
+                if self.goal_nums[0][k][i].abs() != self.current_nums[0][k][i] {
                     return false;
                 }
             }
@@ -70,7 +70,7 @@ impl NonogramBoard {
         // Check row nums.
         for k in 0..self.dimensions[1] {
             for i in 0..self.nums_per[1] as usize {
-                if self.goal_nums[1][k][i] != self.current_nums[1][k][i] {
+                if self.goal_nums[1][k][i].abs() != self.current_nums[1][k][i] {
                     return false;
                 }
             }

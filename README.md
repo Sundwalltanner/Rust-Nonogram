@@ -44,6 +44,14 @@ The win condition is based entirely on which boxes you've filled in. Every time 
 
 The progress tracker doesn't indicate correctness. You can fill an incorrect box, and it will still add that box to your progress.
 
+You'll notice as you progress that the hint numbers will automatically change to a darker color. This indicates that the game thinks that particular sequence is taken care of. This exists in order to assist the player so they don't have to remember which sequences they've completed. The code which is doing this is very poor at the moment. Sometimes it can be very misleading. I'm sorry. I'll try to fix it, but I can't wrap my head around how to get this working properly. The image below shows this feature in action:
+
+![Dynamic hint number crossout](https://i.imgur.com/UtBIlRv.png)
+
+When you win, a screen like this will pop up. This UI is subject to change:
+
+![Win screen](https://i.imgur.com/eRgAWcQ.png)
+
 Here's a gif of me solving a basic 5x5 Nonogram from start to finish:
 
 ![Gif of solving 5x5 Nonogram](https://i.imgur.com/PdQWNUo.gif)
