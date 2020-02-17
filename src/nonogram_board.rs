@@ -179,51 +179,41 @@ impl NonogramBoard {
     }
 
     pub fn update_crossouts(&mut self) {
-        /*
-        // Get column nums.
-        for col in 0..self.dimensions[0] {
-            let mut num_hint = (self.nums_per[0] - 1) as usize;
-            let mut filling = false;
-            for row in 0..self.dimensions[1] {
-                if self.data[col][row] == 1 {
-                    if filling == false {
-                        filling = true;
-                    }
-                    nums[0][col][num_hint] += 1;
-                } else {
-                    if filling {
-                        filling = false;
-                        if num_hint != 0 {
-                            num_hint -= 1;
-                        }
-                    }
-                }
-            }
-        }
-        */
+        // Check column nums.
+        for k in 0..self.dimensions[0] {
+            let mut match_count = false;
 
-        /*
-        // Get row nums.
-        for row in 0..self.dimensions[1] {
-            let mut num_hint = (self.nums_per[1] - 1) as usize;
-            let mut filling = false;
-            for col in 0..self.dimensions[0] {
-                if self.data[col][row] == 1 {
-                    if filling == false {
-                        filling = true;
+            if self.current_nums[0][k].iter().filter(|&n| *n != 0).count() <= self.goal_nums[0][k].iter().filter(|&n| *n != 0).count() {
+                match_count = true;
+            }
+            for i in 0..self.nums_per[0] as usize {
+                if self.goal_nums[0][k][i].abs() == self.current_nums[0][k][i] && match_count {
+                    if self.goal_nums[0][k][i] > 0 {
+                        self.goal_nums[0][k][i] *= -1;
                     }
-                    nums[1][row][num_hint] += 1;
                 } else {
-                    if filling {
-                        filling = false;
-                        if num_hint != 0 {
-                            num_hint -= 1;
-                        }
-                    }
+                    self.goal_nums[0][k][i] = self.goal_nums[0][k][i].abs();
                 }
             }
         }
-        */
+
+        // Check row nums.
+        for k in 0..self.dimensions[1] {
+            let mut match_count = false;
+
+            if self.current_nums[1][k].iter().filter(|&n| *n != 0).count() <= self.goal_nums[1][k].iter().filter(|&n| *n != 0).count() {
+                match_count = true;
+            }
+            for i in 0..self.nums_per[1] as usize {
+                if self.goal_nums[1][k][i].abs() == self.current_nums[1][k][i] && match_count {
+                    if self.goal_nums[1][k][i] > 0 {
+                        self.goal_nums[1][k][i] *= -1;
+                    }
+                } else {
+                    self.goal_nums[1][k][i] = self.goal_nums[1][k][i].abs();
+                }
+            }
+        }
     }
 
     /// Initialize nonogram board.
