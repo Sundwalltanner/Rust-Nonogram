@@ -5,6 +5,7 @@ use opengl_graphics::{Filter, GlGraphics, GlyphCache, OpenGL, TextureSettings};
 use piston::event_loop::{EventLoop, EventSettings, Events};
 use piston::input::RenderEvent;
 use piston::window::WindowSettings;
+use piston::window::Window;
 
 pub use nonogram_board::NonogramBoard;
 pub use nonogram_board_view::{NonogramView, NonogramViewSettings};
@@ -37,9 +38,11 @@ fn main() {
     let assets = find_folder::Search::ParentsThenKids(3, 3)
         .for_folder("assets")
         .unwrap();
-    let font = &assets.join("FiraSans-Regular.ttf");
     let texture_settings = TextureSettings::new().filter(Filter::Nearest);
+    let font = &assets.join("FiraSans-Regular.ttf");
     let glyphs = &mut GlyphCache::new(font, (), texture_settings).expect("Could not load font");
+    let mark_font = &assets.join("Monoround.ttf");
+    let mark_glyphs = &mut GlyphCache::new(mark_font, (), texture_settings).expect("Could not load font");
 
     while let Some(e) = events.next(&mut window) {
         nonogram_controller.event(
@@ -61,15 +64,17 @@ fn main() {
                 nonogram_view.draw(
                     &nonogram_controller,
                     glyphs,
+                    mark_glyphs,
                     &c,
                     g,
                     dur,
                     nonogram_controller.nonogram.count_black,
                     nonogram_controller.nonogram.goal_black,
+                    window.size(),
                 );
             });
         }
-        if let Some(end) = nonogram_controller.nonogram.game_end {
+        if nonogram_controller.nonogram.reset_board {
             nonogram_controller.nonogram = nonogram_board::NonogramBoard::new();
             nonogram_controller.nonogram.initialize();
         }

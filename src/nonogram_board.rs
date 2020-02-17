@@ -11,6 +11,7 @@ pub struct NonogramBoard {
     pub game_start: Option<DateTime<Utc>>,
     pub last_time: Option<DateTime<Utc>>,
     pub game_end: Option<DateTime<Utc>>,
+    pub reset_board: bool,
     pub count_black: u64,
     pub goal_black: u64,
     pub init_ratio: f64,
@@ -26,6 +27,7 @@ impl NonogramBoard {
             current_nums: vec![vec![vec![]]],
             game_start: None,
             game_end: None,
+            reset_board: false,
             last_time: None,
             count_black: 0,
             goal_black: 0,
@@ -178,18 +180,12 @@ impl NonogramBoard {
 
     pub fn update_crossouts(&mut self) {
         /*
-        let mut filled = true;
-        let mut num_hint = 0;
-
         // Get column nums.
         for col in 0..self.dimensions[0] {
+            let mut num_hint = (self.nums_per[0] - 1) as usize;
+            let mut filling = false;
             for row in 0..self.dimensions[1] {
                 if self.data[col][row] == 1 {
-                    if(num_hint < self.nums_per[0]) {
-                        for i in 0..self.current_nums[0][col][num_hint].abs() {
-                            if()
-                        }
-                    }
                     if filling == false {
                         filling = true;
                     }
@@ -234,7 +230,7 @@ impl NonogramBoard {
     pub fn initialize(&mut self) {
         self.set_goal();
         self.goal_nums = self.get_nums();
-        //self.wipe_board();
+        self.wipe_board();
         self.game_start = Some(Utc::now());
     }
 }
