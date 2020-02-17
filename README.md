@@ -66,8 +66,6 @@ Anyways, here's a picture of a solved 30x30 nonogram. It didn't take me 13 secon
 ## What are you still working on?
 This isn't due for a few more weeks, so I've probably got plenty of time to hit these stretch goals:
 
-* A lot of nonogram games have a feature that crosses out the numbers written on sides of the board dynamically based on whether or not the game logic thinks where you placed that filled in box is the only place it can be inserted. This is relatively complicated, so I've been holding off on trying to implement this.
-    * I'm starting to realize that very few nonogram games actually do this. A lot of them either do it wrong, or just allow the user to manually check numbers off. I'll try my best to implement this, because it's incredibly useful in the Nintendo Switch Picross games.
-* Do something with the current win state. Right now if you win, the game just generates a new board and starts the timer over again. At the very least, I need a menu that pops up, informs the player about how long it took them to complete that puzzle, and allow them to press a keybinding in order to escape the menu and start a new puzzle.
+* Do something with the current win state screen. Right now, a menu pops up when you win, but there's no way to back out of it and generate a new nonogram.
 * Potentially look into generating only unique goal states? This didn't end up being a huge issue, because of the method I'm using to generate the goal state. It will be easy enough to compare the current state to the goal state for win conditions. But it might be worthwhile to look into an algorithm for generating nonogram puzzles with unique goal states, as mine currently has the ability to produce a goal state that can be reached by more than one method.
 * Tests, better comments, make Rust happy, make Clippy happy, etc... There's always stuff to work on...
