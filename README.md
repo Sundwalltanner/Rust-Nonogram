@@ -56,7 +56,7 @@ When you win, a screen like this will pop up. This UI is subject to change:
 
 Here's a gif of me solving a basic 5x5 Nonogram from start to finish:
 
-![Gif of solving 5x5 Nonogram](https://i.imgur.com/PdQWNUo.gif)
+![Gif of solving 5x5 Nonogram](http://i.imgur.com/WaEqNRR.gif)
 
 ## Early Access
 This is currently in development. In the meantime, here's a gif of it running:
