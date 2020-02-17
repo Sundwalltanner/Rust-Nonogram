@@ -51,7 +51,7 @@ Here's a gif of me solving a basic 5x5 Nonogram from start to finish:
 ## Early Access
 This is currently in development. In the meantime, here's a gif of it running:
 
-![Gif of program running #1](https://i.imgur.com/MrIILoa.gif)
+![Gif of program running #1](https://i.imgur.com/WxbXy5q.gif)
 
 And here's an image of what it currently looks like when you start it, proving that it's generating the numbers for the columns and rows based on the randomly generated solution:
 
