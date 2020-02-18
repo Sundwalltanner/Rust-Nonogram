@@ -185,7 +185,9 @@ impl NonogramBoard {
             let mut current_it = self.nums_per[0] as usize - 1;
             let mut goal_it = current_it;
 
-            if self.current_nums[0][k].iter().filter(|&n| *n != 0).count() <= self.goal_nums[0][k].iter().filter(|&n| *n != 0).count() {
+            if self.current_nums[0][k].iter().filter(|&n| *n != 0).count()
+                <= self.goal_nums[0][k].iter().filter(|&n| *n != 0).count()
+            {
                 match_count = true;
             }
             for mut i in (0..self.nums_per[0] as usize).rev() {
@@ -207,7 +209,9 @@ impl NonogramBoard {
         for k in 0..self.dimensions[1] {
             let mut match_count = false;
 
-            if self.current_nums[1][k].iter().filter(|&n| *n != 0).count() <= self.goal_nums[1][k].iter().filter(|&n| *n != 0).count() {
+            if self.current_nums[1][k].iter().filter(|&n| *n != 0).count()
+                <= self.goal_nums[1][k].iter().filter(|&n| *n != 0).count()
+            {
                 match_count = true;
             }
             for i in 0..self.nums_per[1] as usize {

@@ -324,6 +324,7 @@ impl NonogramView {
             Rectangle::new(settings.background_color).draw(board_rect, &c.draw_state, c.transform, g);
 
             // Draw filled cell background.
+            // We calculate the height of text by multiplying font size by 0.75 in order to convert between pixels and points.
             let mark_size = (settings.cell_size / 1.5) as u32;
             let mark_width = match mark_glyphs.width(mark_size, &"x") {
                 Ok(v) => v,
@@ -331,7 +332,7 @@ impl NonogramView {
             };
             let mark_loc = [
                 (settings.cell_size / 2.0) - (mark_width as f64 / 2.0),
-                (settings.cell_size / 2.0) + (mark_width as f64 / 2.0) * 0.9,
+                (settings.cell_size / 2.0) + ((mark_size as f64 * 0.75) / 2.0),
             ];
             let mark_text = Text::new_color(settings.marked_cell_background_color, mark_size);
 
@@ -370,30 +371,34 @@ impl NonogramView {
             }
 
             // Draw column and row hint numbers.
+            // We calculate the height of text by multiplying font size by 0.75 in order to convert between pixels and points.
             let hint_num_size = 15;
-            let hint_num_width = match glyphs.width(hint_num_size, &"0") {
-                Ok(v) => v,
-                Err(e) => 0.0,
-            };
-            let hint_num_loc = [
-                (settings.cell_size / 2.0) - (hint_num_width as f64 / 2.0),
-                (settings.cell_size / 2.0) + (hint_num_width as f64 / 2.0),
-            ];
             let hint_reg = Text::new_color(hex("ffffff"), hint_num_size);
             let hint_cross = Text::new_color(hex("666666"), hint_num_size);
             let mut ch_x = 0.0;
             let mut ch_y = 0.0;
 
-            // Draw column numbers.
+            // Draw column hint numbers.
+            // Currently this logic goes through the effort of finding the width of each individual number
+            // in order to try and center all the numbers in a column. This might not be worth the effort,
+            // as it's only really noticeable when the numbers start hitting the double digits.
             for k in 0..settings.cell_dimensions[0] as usize {
                 let mut num_pos = 0;
-                ch_x =
-                    settings.position[0] + (k as f64 * settings.cell_size) + hint_num_loc[0];
                 for i in 0..controller.nonogram.nums_per[0] as usize {
                     let hint_val = controller.nonogram.goal_nums[0][k][i];
-                    let ch = hint_val.abs().to_string();
-                    if ch != "0" {
+
+                    // Only draw column numbers that aren't 0.
+                    if hint_val != 0 {
+                        let ch = hint_val.abs().to_string();
+                        let hint_num_width = match glyphs.width(hint_num_size, &ch) {
+                            Ok(v) => v,
+                            Err(e) => 0.0,
+                        };
+                        let col_num_loc = (settings.cell_size / 2.0) - (hint_num_width as f64 / 2.0);
+                        ch_x = settings.position[0] + (k as f64 * settings.cell_size) + col_num_loc;
                         ch_y = settings.position[0] - num_pos as f64 * 20.0 - 80.0;
+
+                        // Either draw a normal number, or draw a crossout number.
                         if hint_val > 0 {
                             hint_reg
                                 .draw(&ch, glyphs, &c.draw_state, c.transform.trans(ch_x, ch_y), g)
@@ -408,16 +413,20 @@ impl NonogramView {
                 }
             }
 
-            // Draw row numbers.
+            // Draw row hint numbers.
+            let row_num_loc = (settings.cell_size / 2.0) + ((hint_num_size as f64 * 0.75) / 2.0);
             for k in 0..settings.cell_dimensions[1] as usize {
                 let mut num_pos = 0;
-                ch_y =
-                    settings.position[1] + (k as f64 * settings.cell_size) + hint_num_loc[1];
                 for i in 0..controller.nonogram.nums_per[1] as usize {
                     let hint_val = controller.nonogram.goal_nums[1][k][i];
-                    let ch = hint_val.abs().to_string();
-                    if ch != "0" {
+
+                    // Only draw row numbers that aren't 0.
+                    if hint_val != 0 {
+                        let ch = hint_val.abs().to_string();
                         ch_x = settings.position[0] - num_pos as f64 * 20.0 - 25.0;
+                        ch_y = settings.position[1] + (k as f64 * settings.cell_size) + row_num_loc;
+
+                        // Either draw a normal number, or draw a crossout number.
                         if hint_val > 0 {
                             hint_reg
                                 .draw(&ch, glyphs, &c.draw_state, c.transform.trans(ch_x, ch_y), g)
@@ -598,6 +607,7 @@ impl NonogramView {
             // Draw timer.
             let timer_str = format!("{:02}:{:02}:{:02}", total_hrs, rem_mins, rem_seconds);
             let timer_size = 50;
+            
             // Unlike with the other drawn text, we don't use the actual string here,
             // because we don't want it to keep changing its location subtly for every
             // second that passes.

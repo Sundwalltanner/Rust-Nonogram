@@ -4,8 +4,8 @@ use graphics::color::hex;
 use opengl_graphics::{Filter, GlGraphics, GlyphCache, OpenGL, TextureSettings};
 use piston::event_loop::{EventLoop, EventSettings, Events};
 use piston::input::RenderEvent;
-use piston::window::WindowSettings;
 use piston::window::Window;
+use piston::window::WindowSettings;
 
 pub use nonogram_board::NonogramBoard;
 pub use nonogram_board_view::{NonogramView, NonogramViewSettings};
@@ -42,7 +42,8 @@ fn main() {
     let font = &assets.join("FiraSans-Regular.ttf");
     let glyphs = &mut GlyphCache::new(font, (), texture_settings).expect("Could not load font");
     let mark_font = &assets.join("Monoround.ttf");
-    let mark_glyphs = &mut GlyphCache::new(mark_font, (), texture_settings).expect("Could not load font");
+    let mark_glyphs =
+        &mut GlyphCache::new(mark_font, (), texture_settings).expect("Could not load font");
 
     while let Some(e) = events.next(&mut window) {
         nonogram_controller.event(

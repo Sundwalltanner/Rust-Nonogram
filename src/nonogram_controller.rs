@@ -69,10 +69,10 @@ impl NonogramController {
             }
         }
         if let Some(Button::Mouse(MouseButton::Left)) = e.release_args() {
-                self.mouse_d[0] = false;
+            self.mouse_d[0] = false;
         }
         if let Some(Button::Mouse(MouseButton::Right)) = e.release_args() {
-                self.mouse_d[1] = false;
+            self.mouse_d[1] = false;
         }
     }
 }
