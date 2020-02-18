@@ -182,17 +182,23 @@ impl NonogramBoard {
         // Check column nums.
         for k in 0..self.dimensions[0] {
             let mut match_count = false;
+            let mut current_it = self.nums_per[0] as usize - 1;
+            let mut goal_it = current_it;
 
             if self.current_nums[0][k].iter().filter(|&n| *n != 0).count() <= self.goal_nums[0][k].iter().filter(|&n| *n != 0).count() {
                 match_count = true;
             }
-            for i in 0..self.nums_per[0] as usize {
-                if self.goal_nums[0][k][i].abs() == self.current_nums[0][k][i] && match_count {
-                    if self.goal_nums[0][k][i] > 0 {
-                        self.goal_nums[0][k][i] *= -1;
+            for mut i in (0..self.nums_per[0] as usize).rev() {
+                for j in (goal_it..self.nums_per[0] as usize).rev() {
+                    if self.goal_nums[0][k][j].abs() == self.current_nums[0][k][i] && match_count {
+                        if self.goal_nums[0][k][j] > 0 {
+                            self.goal_nums[0][k][j] *= -1;
+                            goal_it = j - 1;
+                            i = j - 1;
+                        }
+                    } else {
+                        self.goal_nums[0][k][j] = self.goal_nums[0][k][j].abs();
                     }
-                } else {
-                    self.goal_nums[0][k][i] = self.goal_nums[0][k][i].abs();
                 }
             }
         }
