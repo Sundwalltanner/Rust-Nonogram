@@ -195,14 +195,18 @@ impl NonogramBoard {
             while goal_it > 0 {
                 if self.goal_nums[0][k][goal_it - 1] != 0 {
                     while current_it > 0 {
-                        if self.goal_nums[0][k][goal_it - 1].abs() == self.current_nums[0][k][current_it - 1] && match_count {
+                        if self.goal_nums[0][k][goal_it - 1].abs()
+                            == self.current_nums[0][k][current_it - 1]
+                            && match_count
+                        {
                             if self.goal_nums[0][k][goal_it - 1] > 0 {
                                 self.goal_nums[0][k][goal_it - 1] *= -1;
                             }
                             match_it = current_it - 1;
                             break;
                         } else {
-                            self.goal_nums[0][k][goal_it - 1] = self.goal_nums[0][k][goal_it - 1].abs();
+                            self.goal_nums[0][k][goal_it - 1] =
+                                self.goal_nums[0][k][goal_it - 1].abs();
                         }
                         current_it -= 1;
                     }
@@ -228,14 +232,18 @@ impl NonogramBoard {
             while goal_it > 0 {
                 if self.goal_nums[1][k][goal_it - 1] != 0 {
                     while current_it > 0 {
-                        if self.goal_nums[1][k][goal_it - 1].abs() == self.current_nums[1][k][current_it - 1] && match_count {
+                        if self.goal_nums[1][k][goal_it - 1].abs()
+                            == self.current_nums[1][k][current_it - 1]
+                            && match_count
+                        {
                             if self.goal_nums[1][k][goal_it - 1] > 0 {
                                 self.goal_nums[1][k][goal_it - 1] *= -1;
                             }
                             match_it = current_it - 1;
                             break;
                         } else {
-                            self.goal_nums[1][k][goal_it - 1] = self.goal_nums[1][k][goal_it - 1].abs();
+                            self.goal_nums[1][k][goal_it - 1] =
+                                self.goal_nums[1][k][goal_it - 1].abs();
                         }
                         current_it -= 1;
                     }

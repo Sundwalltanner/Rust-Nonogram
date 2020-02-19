@@ -5,7 +5,7 @@ use graphics::types::Color;
 use graphics::{Context, Graphics};
 use piston::window::Size;
 
-use crate::common::{ButtonInteraction};
+use crate::common::ButtonInteraction;
 use crate::NonogramController;
 
 #[derive(Default)]
@@ -31,6 +31,7 @@ pub struct NonogramViewSettings {
     pub marked_cell_background_color: Color,
     pub text_color: Color,
     pub dimensions_dropdown_menu_box: [f64; 4],
+    pub restart_box: [f64; 4],
 }
 
 impl NonogramViewSettings {
@@ -57,6 +58,7 @@ impl NonogramViewSettings {
             marked_cell_background_color: hex("f77b00"),
             text_color: hex("ffffff"),
             dimensions_dropdown_menu_box: [300.0, 10.0, 100.0, 30.0],
+            restart_box: [450.0, 10.0, 100.0, 30.0],
         };
         view_settings.calc_dimensions();
         view_settings
@@ -105,12 +107,7 @@ impl NonogramView {
         let settings = &self.settings;
 
         // Rectangle the size of the entire inner window.
-        let window_rect = [
-            0.0,
-            0.0,
-            window_size.width,
-            window_size.height,
-        ];
+        let window_rect = [0.0, 0.0, window_size.width, window_size.height];
 
         let total_seconds = duration.num_seconds();
         let total_mins = total_seconds / 60;
@@ -124,7 +121,7 @@ impl NonogramView {
 
         // Draw win screen.
         if let Some(ind) = controller.nonogram.game_end {
-        //if true {
+            //if true {
             let mut win_box_rect = [
                 window_size.width / 2.0,
                 window_size.height / 2.0,
@@ -136,7 +133,12 @@ impl NonogramView {
             win_box_rect[1] = win_box_rect[1] - (win_box_rect[3] / 2.0);
             //println!("Width: {}, Height: {}", win_box_rect[0], win_box_rect[1]);
 
-            Rectangle::new_round(hex("333333"), 10.0).draw(win_box_rect, &c.draw_state, c.transform, g);
+            Rectangle::new_round(hex("333333"), 10.0).draw(
+                win_box_rect,
+                &c.draw_state,
+                c.transform,
+                g,
+            );
 
             // Draw win title.
             let win_title_str = "YOU WON".to_string();
@@ -147,7 +149,7 @@ impl NonogramView {
             };
             let win_title_loc = [
                 win_box_rect[0] + (win_box_rect[2] / 2.0) - (win_title_width / 2.0),
-                180.0
+                180.0,
             ];
             Text::new_color(hex("ffffff"), win_title_size)
                 .draw(
@@ -161,7 +163,10 @@ impl NonogramView {
 
             let mut stat_row_y = 250.0;
             let stat_row_margins = [30.0, 30.0];
-            let stat_row_x = [win_box_rect[2] + stat_row_margins[0], win_box_rect[2] + win_box_rect[0] - stat_row_margins[0]];
+            let stat_row_x = [
+                win_box_rect[2] + stat_row_margins[0],
+                win_box_rect[2] + win_box_rect[0] - stat_row_margins[0],
+            ];
 
             // Left-aligned timer title.
             Text::new_color(hex("ffffff"), 25)
@@ -215,7 +220,8 @@ impl NonogramView {
                     &format!("{}", black_count_str),
                     glyphs,
                     &c.draw_state,
-                    c.transform.trans(stat_row_x[1] - black_count_width, stat_row_y),
+                    c.transform
+                        .trans(stat_row_x[1] - black_count_width, stat_row_y),
                     g,
                 )
                 .unwrap_or_else(|_| panic!("text draw failed"));
@@ -247,7 +253,8 @@ impl NonogramView {
                     &format!("{}", total_count_str),
                     glyphs,
                     &c.draw_state,
-                    c.transform.trans(stat_row_x[1] - total_count_width, stat_row_y),
+                    c.transform
+                        .trans(stat_row_x[1] - total_count_width, stat_row_y),
                     g,
                 )
                 .unwrap_or_else(|_| panic!("text draw failed"));
@@ -270,16 +277,18 @@ impl NonogramView {
             let black_total_ratio = controller.nonogram.goal_black as f64 / total_count as f64;
             let black_total_ratio_str = format!("{:.2}", black_total_ratio);
             let black_total_ratio_size = 25;
-            let black_total_ratio_width = match glyphs.width(black_total_ratio_size, &black_total_ratio_str) {
-                Ok(v) => v,
-                Err(e) => 0.0,
-            };
+            let black_total_ratio_width =
+                match glyphs.width(black_total_ratio_size, &black_total_ratio_str) {
+                    Ok(v) => v,
+                    Err(e) => 0.0,
+                };
             Text::new_color(hex("ffffff"), 25)
                 .draw(
                     &format!("{}", black_total_ratio_str),
                     glyphs,
                     &c.draw_state,
-                    c.transform.trans(stat_row_x[1] - black_total_ratio_width, stat_row_y),
+                    c.transform
+                        .trans(stat_row_x[1] - black_total_ratio_width, stat_row_y),
                     g,
                 )
                 .unwrap_or_else(|_| panic!("text draw failed"));
@@ -299,7 +308,10 @@ impl NonogramView {
                 .unwrap_or_else(|_| panic!("text draw failed"));
 
             // Right-aligned dimensions.
-            let dimensions_str = format!("{}x{}", controller.nonogram.dimensions[0], controller.nonogram.dimensions[1]);
+            let dimensions_str = format!(
+                "{}x{}",
+                controller.nonogram.dimensions[0], controller.nonogram.dimensions[1]
+            );
             let dimensions_size = 25;
             let dimensions_width = match glyphs.width(dimensions_size, &dimensions_str) {
                 Ok(v) => v,
@@ -310,13 +322,12 @@ impl NonogramView {
                     &format!("{}", dimensions_str),
                     glyphs,
                     &c.draw_state,
-                    c.transform.trans(stat_row_x[1] - dimensions_width, stat_row_y),
+                    c.transform
+                        .trans(stat_row_x[1] - dimensions_width, stat_row_y),
                     g,
                 )
                 .unwrap_or_else(|_| panic!("text draw failed"));
-
         } else {
-
             let board_rect = [
                 settings.position[0],
                 settings.position[1],
@@ -325,7 +336,12 @@ impl NonogramView {
             ];
 
             // Draw board background.
-            Rectangle::new(settings.background_color).draw(board_rect, &c.draw_state, c.transform, g);
+            Rectangle::new(settings.background_color).draw(
+                board_rect,
+                &c.draw_state,
+                c.transform,
+                g,
+            );
 
             // Draw filled cell background.
             // We calculate the height of text by multiplying font size by 0.75 in order to convert between pixels and points.
@@ -343,7 +359,10 @@ impl NonogramView {
             for col in 0..settings.cell_dimensions[0] {
                 for row in 0..settings.cell_dimensions[1] {
                     let value = controller.nonogram.get([col, row]);
-                    let pos = [col as f64 * settings.cell_size, row as f64 * settings.cell_size];
+                    let pos = [
+                        col as f64 * settings.cell_size,
+                        row as f64 * settings.cell_size,
+                    ];
                     if value == 1 {
                         let cell_rect = [
                             settings.position[0] + pos[0],
@@ -357,19 +376,19 @@ impl NonogramView {
                             c.transform,
                             g,
                         );
-                    } else if value == 2 {                     
-                        mark_text.draw(
-                            "x",
-                            mark_glyphs,
-                            &c.draw_state,
-                            c.transform.trans(
-                                settings.position[0] + pos[0] + mark_loc[0],
-                                settings.position[1] + pos[1] + mark_loc[1],
-                            ),
-                            g,
-                        )
-                        .unwrap_or_else(|_| panic!("text draw failed"));
-                        
+                    } else if value == 2 {
+                        mark_text
+                            .draw(
+                                "x",
+                                mark_glyphs,
+                                &c.draw_state,
+                                c.transform.trans(
+                                    settings.position[0] + pos[0] + mark_loc[0],
+                                    settings.position[1] + pos[1] + mark_loc[1],
+                                ),
+                                g,
+                            )
+                            .unwrap_or_else(|_| panic!("text draw failed"));
                     }
                 }
             }
@@ -398,7 +417,8 @@ impl NonogramView {
                             Ok(v) => v,
                             Err(e) => 0.0,
                         };
-                        let col_num_loc = (settings.cell_size / 2.0) - (hint_num_width as f64 / 2.0);
+                        let col_num_loc =
+                            (settings.cell_size / 2.0) - (hint_num_width as f64 / 2.0);
                         ch_x = settings.position[0] + (k as f64 * settings.cell_size) + col_num_loc;
                         ch_y = settings.position[0] - num_pos as f64 * 20.0 - 80.0;
 
@@ -527,20 +547,22 @@ impl NonogramView {
             // Draw nonogram title.
             let nonogram_title_str = "NONOGRAM".to_string();
             let nonogram_title_size = 25;
-            let nonogram_title_width = match glyphs.width(nonogram_title_size, &nonogram_title_str) {
+            let nonogram_title_width = match glyphs.width(nonogram_title_size, &nonogram_title_str)
+            {
                 Ok(v) => v,
                 Err(e) => 0.0,
             };
             let nonogram_title_loc = [
                 info_box_rect[0] + (info_box_rect[2] / 2.0) - (nonogram_title_width / 2.0),
-                60.0
+                60.0,
             ];
             Text::new_color(hex("ffffff"), nonogram_title_size)
                 .draw(
                     &nonogram_title_str,
                     glyphs,
                     &c.draw_state,
-                    c.transform.trans(nonogram_title_loc[0], nonogram_title_loc[1]),
+                    c.transform
+                        .trans(nonogram_title_loc[0], nonogram_title_loc[1]),
                     g,
                 )
                 .unwrap_or_else(|_| panic!("text draw failed"));
@@ -548,26 +570,33 @@ impl NonogramView {
             // Draw progress title.
             let progress_title_str = "PROGRESS".to_string();
             let progress_title_size = 12;
-            let progress_title_width = match glyphs.width(progress_title_size, &progress_title_str) {
+            let progress_title_width = match glyphs.width(progress_title_size, &progress_title_str)
+            {
                 Ok(v) => v,
                 Err(e) => 0.0,
             };
             let progress_title_loc = [
                 info_box_rect[0] + (info_box_rect[2] / 2.0) - (progress_title_width / 2.0),
-                95.0
+                95.0,
             ];
             Text::new_color(hex("ffffff"), progress_title_size)
                 .draw(
                     &progress_title_str,
                     glyphs,
                     &c.draw_state,
-                    c.transform.trans(progress_title_loc[0], progress_title_loc[1]),
+                    c.transform
+                        .trans(progress_title_loc[0], progress_title_loc[1]),
                     g,
                 )
                 .unwrap_or_else(|_| panic!("text draw failed"));
 
             // Draw progress.
-            let progress_str = format!("{} / {} ({:.2}%)", count_black, goal_black, (count_black as f32 / goal_black as f32) * 100.0);
+            let progress_str = format!(
+                "{} / {} ({:.2}%)",
+                count_black,
+                goal_black,
+                (count_black as f32 / goal_black as f32) * 100.0
+            );
             let progress_size = 25;
             let progress_width = match glyphs.width(progress_size, &progress_str) {
                 Ok(v) => v,
@@ -575,7 +604,7 @@ impl NonogramView {
             };
             let progress_loc = [
                 info_box_rect[0] + (info_box_rect[2] / 2.0) - (progress_width / 2.0),
-                120.0
+                120.0,
             ];
             Text::new_color(hex("ffffff"), progress_size)
                 .draw(
@@ -596,7 +625,7 @@ impl NonogramView {
             };
             let timer_title_loc = [
                 info_box_rect[0] + (info_box_rect[2] / 2.0) - (timer_title_width / 2.0),
-                160.0
+                160.0,
             ];
             Text::new_color(hex("ffffff"), timer_title_size)
                 .draw(
@@ -611,7 +640,7 @@ impl NonogramView {
             // Draw timer.
             let timer_str = format!("{:02}:{:02}:{:02}", total_hrs, rem_mins, rem_seconds);
             let timer_size = 50;
-            
+
             // Unlike with the other drawn text, we don't use the actual string here,
             // because we don't want it to keep changing its location subtly for every
             // second that passes.
@@ -621,7 +650,7 @@ impl NonogramView {
             };
             let timer_loc = [
                 info_box_rect[0] + (info_box_rect[2] / 2.0) - (timer_width / 2.0),
-                200.0
+                200.0,
             ];
             Text::new_color(hex("ffffff"), timer_size)
                 .draw(
@@ -680,15 +709,23 @@ impl NonogramView {
                     );
                 }
             }
-            
-            let dimensions_str = format!("{}x{}", controller.nonogram.dimensions[0], controller.nonogram.dimensions[1]);
+
+            let dimensions_str = format!(
+                "{}x{}",
+                controller.nonogram.dimensions[0], controller.nonogram.dimensions[1]
+            );
             let dimensions_size = 25;
             Text::new_color(hex("ffffff"), dimensions_size)
                 .draw(
                     &format!("{}", dimensions_str),
                     glyphs,
                     &c.draw_state,
-                    c.transform.trans(settings.dimensions_dropdown_menu_box[0] + 5.0, settings.dimensions_dropdown_menu_box[1] + (settings.dimensions_dropdown_menu_box[3] / 2.0) + ((dimensions_size as f64 * 0.75) / 2.0)),
+                    c.transform.trans(
+                        settings.dimensions_dropdown_menu_box[0] + 5.0,
+                        settings.dimensions_dropdown_menu_box[1]
+                            + (settings.dimensions_dropdown_menu_box[3] / 2.0)
+                            + ((dimensions_size as f64 * 0.75) / 2.0),
+                    ),
                     g,
                 )
                 .unwrap_or_else(|_| panic!("text draw failed"));
@@ -698,19 +735,74 @@ impl NonogramView {
             // Reference for unicode character codes: https://github.com/google/material-design-icons/blob/master/iconfont/codepoints
             let dimensions_dropdown_arrow_str = format!("\u{e5c5}");
             let dimensions_dropdown_arrow_size = 25;
-            let dimensions_dropdown_arrow_width = match material_icons_glyphs.width(dimensions_dropdown_arrow_size, &dimensions_dropdown_arrow_str) {
+            let dimensions_dropdown_arrow_width = match material_icons_glyphs.width(
+                dimensions_dropdown_arrow_size,
+                &dimensions_dropdown_arrow_str,
+            ) {
                 Ok(v) => v,
                 Err(e) => 0.0,
             };
             Text::new_color(hex("ffffff"), dimensions_dropdown_arrow_size)
-            .draw(
-                &format!("{}", dimensions_dropdown_arrow_str),
-                material_icons_glyphs,
-                &c.draw_state,
-                c.transform.trans(settings.dimensions_dropdown_menu_box[0] + settings.dimensions_dropdown_menu_box[2] - dimensions_dropdown_arrow_width, settings.dimensions_dropdown_menu_box[1] + (settings.dimensions_dropdown_menu_box[3] / 2.0) + (dimensions_dropdown_arrow_size as f64 * 0.75)),
-                g,
-            )
-            .unwrap_or_else(|_| panic!("text draw failed"));
+                .draw(
+                    &format!("{}", dimensions_dropdown_arrow_str),
+                    material_icons_glyphs,
+                    &c.draw_state,
+                    c.transform.trans(
+                        settings.dimensions_dropdown_menu_box[0]
+                            + settings.dimensions_dropdown_menu_box[2]
+                            - dimensions_dropdown_arrow_width,
+                        settings.dimensions_dropdown_menu_box[1]
+                            + (settings.dimensions_dropdown_menu_box[3] / 2.0)
+                            + (dimensions_dropdown_arrow_size as f64 * 0.75),
+                    ),
+                    g,
+                )
+                .unwrap_or_else(|_| panic!("text draw failed"));
+
+            // Restart game button.
+            match controller.restart_button {
+                ButtonInteraction::None => {
+                    Rectangle::new_round(hex("333333"), 5.0).draw(
+                        settings.restart_box,
+                        &c.draw_state,
+                        c.transform,
+                        g,
+                    );
+                }
+                ButtonInteraction::Hover => {
+                    Rectangle::new_round(hex("2D2D2D"), 5.0).draw(
+                        settings.restart_box,
+                        &c.draw_state,
+                        c.transform,
+                        g,
+                    );
+                }
+                ButtonInteraction::Select => {
+                    Rectangle::new_round(hex("C70039"), 5.0).draw(
+                        settings.restart_box,
+                        &c.draw_state,
+                        c.transform,
+                        g,
+                    );
+                }
+            }
+
+            let restart_str = "RESTART".to_string();
+            let restart_size = 25;
+            Text::new_color(hex("ffffff"), restart_size)
+                .draw(
+                    &format!("{}", restart_str),
+                    glyphs,
+                    &c.draw_state,
+                    c.transform.trans(
+                        settings.restart_box[0] + 5.0,
+                        settings.restart_box[1]
+                            + (settings.restart_box[3] / 2.0)
+                            + ((restart_size as f64 * 0.75) / 2.0),
+                    ),
+                    g,
+                )
+                .unwrap_or_else(|_| panic!("text draw failed"));
         }
     }
 }
