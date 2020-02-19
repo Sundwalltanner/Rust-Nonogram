@@ -182,46 +182,66 @@ impl NonogramBoard {
         // Check column nums.
         for k in 0..self.dimensions[0] {
             let mut match_count = false;
-            let mut current_it = self.nums_per[0] as usize - 1;
+            let mut current_it = self.nums_per[0] as usize;
             let mut goal_it = current_it;
+            let mut match_it = current_it;
 
+            // If we have more sequences than are in the goal, then they're all wrong.
             if self.current_nums[0][k].iter().filter(|&n| *n != 0).count()
                 <= self.goal_nums[0][k].iter().filter(|&n| *n != 0).count()
             {
                 match_count = true;
             }
-            for mut i in (0..self.nums_per[0] as usize).rev() {
-                for j in (goal_it..self.nums_per[0] as usize).rev() {
-                    if self.goal_nums[0][k][j].abs() == self.current_nums[0][k][i] && match_count {
-                        if self.goal_nums[0][k][j] > 0 {
-                            self.goal_nums[0][k][j] *= -1;
-                            goal_it = j - 1;
-                            i = j - 1;
+            while goal_it > 0 {
+                if self.goal_nums[0][k][goal_it - 1] != 0 {
+                    while current_it > 0 {
+                        if self.goal_nums[0][k][goal_it - 1].abs() == self.current_nums[0][k][current_it - 1] && match_count {
+                            if self.goal_nums[0][k][goal_it - 1] > 0 {
+                                self.goal_nums[0][k][goal_it - 1] *= -1;
+                            }
+                            match_it = current_it - 1;
+                            break;
+                        } else {
+                            self.goal_nums[0][k][goal_it - 1] = self.goal_nums[0][k][goal_it - 1].abs();
                         }
-                    } else {
-                        self.goal_nums[0][k][j] = self.goal_nums[0][k][j].abs();
+                        current_it -= 1;
                     }
                 }
+                current_it = match_it;
+                goal_it -= 1;
             }
         }
 
         // Check row nums.
         for k in 0..self.dimensions[1] {
             let mut match_count = false;
+            let mut current_it = self.nums_per[1] as usize;
+            let mut goal_it = current_it;
+            let mut match_it = current_it;
 
+            // If we have more sequences than are in the goal, then they're all wrong.
             if self.current_nums[1][k].iter().filter(|&n| *n != 0).count()
                 <= self.goal_nums[1][k].iter().filter(|&n| *n != 0).count()
             {
                 match_count = true;
             }
-            for i in 0..self.nums_per[1] as usize {
-                if self.goal_nums[1][k][i].abs() == self.current_nums[1][k][i] && match_count {
-                    if self.goal_nums[1][k][i] > 0 {
-                        self.goal_nums[1][k][i] *= -1;
+            while goal_it > 0 {
+                if self.goal_nums[1][k][goal_it - 1] != 0 {
+                    while current_it > 0 {
+                        if self.goal_nums[1][k][goal_it - 1].abs() == self.current_nums[1][k][current_it - 1] && match_count {
+                            if self.goal_nums[1][k][goal_it - 1] > 0 {
+                                self.goal_nums[1][k][goal_it - 1] *= -1;
+                            }
+                            match_it = current_it - 1;
+                            break;
+                        } else {
+                            self.goal_nums[1][k][goal_it - 1] = self.goal_nums[1][k][goal_it - 1].abs();
+                        }
+                        current_it -= 1;
                     }
-                } else {
-                    self.goal_nums[1][k][i] = self.goal_nums[1][k][i].abs();
                 }
+                current_it = match_it;
+                goal_it -= 1;
             }
         }
     }
