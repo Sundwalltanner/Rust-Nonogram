@@ -1,5 +1,6 @@
 use piston::input::GenericEvent;
 
+use crate::common::{ButtonInteraction};
 use crate::nonogram_board::NonogramBoard;
 
 /// Handles events for nonogram game.
@@ -14,6 +15,8 @@ pub struct NonogramController {
     mouse_d: [bool; 2],
     /// Stores current cell type being manipulated (empty, filled, marked).
     current_action: u8,
+    /// Current status of dimensions dropdown menu.
+    pub dimensions_dropdown_menu: ButtonInteraction,
 }
 
 impl NonogramController {
@@ -25,11 +28,12 @@ impl NonogramController {
             cursor_pos: [0.0; 2],
             mouse_d: [false; 2],
             current_action: 0,
+            dimensions_dropdown_menu: ButtonInteraction::None,
         }
     }
 
     /// Handles events.
-    pub fn event<E: GenericEvent>(&mut self, board_pos: [f64; 2], size: [f64; 2], e: &E) {
+    pub fn event<E: GenericEvent>(&mut self, board_pos: [f64; 2], size: [f64; 2], dimensions_dropdown_menu_box: [f64; 4], e: &E) {
         use piston::input::{Button, Key, MouseButton};
 
         if let Some(pos) = e.mouse_cursor_args() {
@@ -54,6 +58,15 @@ impl NonogramController {
                 }
             } else {
                 self.selected_cell = None;
+
+                // Check that coordinates are inside dimensions dropdown menu button.
+                if self.cursor_pos[0] >= dimensions_dropdown_menu_box[0] && self.cursor_pos[0] <= (dimensions_dropdown_menu_box[0] + dimensions_dropdown_menu_box[2]) {
+                    if self.cursor_pos[1] >= dimensions_dropdown_menu_box[1] && self.cursor_pos[1] <= (dimensions_dropdown_menu_box[1] + dimensions_dropdown_menu_box[3]) {
+                        self.dimensions_dropdown_menu = ButtonInteraction::Hover;
+                    } 
+                } else {
+                    self.dimensions_dropdown_menu = ButtonInteraction::None;
+                }
             }
         }
         if let Some(Button::Mouse(MouseButton::Left)) = e.press_args() {

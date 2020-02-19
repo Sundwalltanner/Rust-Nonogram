@@ -5,6 +5,7 @@ use graphics::types::Color;
 use graphics::{Context, Graphics};
 use piston::window::Size;
 
+use crate::common::{ButtonInteraction};
 use crate::NonogramController;
 
 #[derive(Default)]
@@ -29,6 +30,7 @@ pub struct NonogramViewSettings {
     pub filled_cell_background_color: Color,
     pub marked_cell_background_color: Color,
     pub text_color: Color,
+    pub dimensions_dropdown_menu_box: [f64; 4],
 }
 
 impl NonogramViewSettings {
@@ -54,6 +56,7 @@ impl NonogramViewSettings {
             filled_cell_background_color: hex("353235"),
             marked_cell_background_color: hex("f77b00"),
             text_color: hex("ffffff"),
+            dimensions_dropdown_menu_box: [300.0, 10.0, 100.0, 30.0],
         };
         view_settings.calc_dimensions();
         view_settings
@@ -86,6 +89,7 @@ impl NonogramView {
         controller: &NonogramController,
         glyphs: &mut C,
         mark_glyphs: &mut C,
+        material_icons_glyphs: &mut C,
         c: &Context,
         g: &mut G,
         duration: Duration,
@@ -648,6 +652,65 @@ impl NonogramView {
                 )
                 .draw(cell_rect, &c.draw_state, c.transform, g);
             }
+
+            // Dropdown size selection menu.
+            match controller.dimensions_dropdown_menu {
+                ButtonInteraction::None => {
+                    Rectangle::new_round(hex("333333"), 5.0).draw(
+                        settings.dimensions_dropdown_menu_box,
+                        &c.draw_state,
+                        c.transform,
+                        g,
+                    );
+                }
+                ButtonInteraction::Hover => {
+                    Rectangle::new_round(hex("262626"), 5.0).draw(
+                        settings.dimensions_dropdown_menu_box,
+                        &c.draw_state,
+                        c.transform,
+                        g,
+                    );
+                }
+                ButtonInteraction::Select => {
+                    Rectangle::new_round(hex("262626"), 5.0).draw(
+                        settings.dimensions_dropdown_menu_box,
+                        &c.draw_state,
+                        c.transform,
+                        g,
+                    );
+                }
+            }
+            
+            let dimensions_str = format!("{}x{}", controller.nonogram.dimensions[0], controller.nonogram.dimensions[1]);
+            let dimensions_size = 25;
+            Text::new_color(hex("ffffff"), dimensions_size)
+                .draw(
+                    &format!("{}", dimensions_str),
+                    glyphs,
+                    &c.draw_state,
+                    c.transform.trans(settings.dimensions_dropdown_menu_box[0] + 5.0, settings.dimensions_dropdown_menu_box[1] + (settings.dimensions_dropdown_menu_box[3] / 2.0) + ((dimensions_size as f64 * 0.75) / 2.0)),
+                    g,
+                )
+                .unwrap_or_else(|_| panic!("text draw failed"));
+
+            // Draw dropdown arrow.
+            // Reference for Material Icons: https://material.io/resources/icons/?style=baseline
+            // Reference for unicode character codes: https://github.com/google/material-design-icons/blob/master/iconfont/codepoints
+            let dimensions_dropdown_arrow_str = format!("\u{e5c5}");
+            let dimensions_dropdown_arrow_size = 25;
+            let dimensions_dropdown_arrow_width = match material_icons_glyphs.width(dimensions_dropdown_arrow_size, &dimensions_dropdown_arrow_str) {
+                Ok(v) => v,
+                Err(e) => 0.0,
+            };
+            Text::new_color(hex("ffffff"), dimensions_dropdown_arrow_size)
+            .draw(
+                &format!("{}", dimensions_dropdown_arrow_str),
+                material_icons_glyphs,
+                &c.draw_state,
+                c.transform.trans(settings.dimensions_dropdown_menu_box[0] + settings.dimensions_dropdown_menu_box[2] - dimensions_dropdown_arrow_width, settings.dimensions_dropdown_menu_box[1] + (settings.dimensions_dropdown_menu_box[3] / 2.0) + (dimensions_dropdown_arrow_size as f64 * 0.75)),
+                g,
+            )
+            .unwrap_or_else(|_| panic!("text draw failed"));
         }
     }
 }

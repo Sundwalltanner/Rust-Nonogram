@@ -11,6 +11,7 @@ pub use nonogram_board::NonogramBoard;
 pub use nonogram_board_view::{NonogramView, NonogramViewSettings};
 pub use nonogram_controller::NonogramController;
 
+mod common;
 mod nonogram_board;
 mod nonogram_board_view;
 mod nonogram_controller;
@@ -40,15 +41,19 @@ fn main() {
         .unwrap();
     let texture_settings = TextureSettings::new().filter(Filter::Nearest);
     let font = &assets.join("FiraSans-Regular.ttf");
-    let glyphs = &mut GlyphCache::new(font, (), texture_settings).expect("Could not load font");
+    let glyphs = &mut GlyphCache::new(font, (), texture_settings).expect("Could not load FiraSans-Regular.ttf");
     let mark_font = &assets.join("Monoround.ttf");
     let mark_glyphs =
-        &mut GlyphCache::new(mark_font, (), texture_settings).expect("Could not load font");
+        &mut GlyphCache::new(mark_font, (), texture_settings).expect("Could not load Monoround.ttf");
+    let material_icons_font = &assets.join("MaterialIcons-Regular.ttf");
+    let material_icons_glyphs =
+        &mut GlyphCache::new(material_icons_font, (), texture_settings).expect("Could not load MaterialIcons-Regular.ttf");
 
     while let Some(e) = events.next(&mut window) {
         nonogram_controller.event(
             nonogram_view.settings.position,
             nonogram_view.settings.board_dimensions,
+            nonogram_view.settings.dimensions_dropdown_menu_box,
             &e,
         );
         if let Some(args) = e.render_args() {
@@ -66,6 +71,7 @@ fn main() {
                     &nonogram_controller,
                     glyphs,
                     mark_glyphs,
+                    material_icons_glyphs,
                     &c,
                     g,
                     dur,
