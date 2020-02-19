@@ -664,7 +664,7 @@ impl NonogramView {
                     );
                 }
                 ButtonInteraction::Hover => {
-                    Rectangle::new_round(hex("262626"), 5.0).draw(
+                    Rectangle::new_round(hex("2D2D2D"), 5.0).draw(
                         settings.dimensions_dropdown_menu_box,
                         &c.draw_state,
                         c.transform,
@@ -672,7 +672,7 @@ impl NonogramView {
                     );
                 }
                 ButtonInteraction::Select => {
-                    Rectangle::new_round(hex("262626"), 5.0).draw(
+                    Rectangle::new_round(hex("C70039"), 5.0).draw(
                         settings.dimensions_dropdown_menu_box,
                         &c.draw_state,
                         c.transform,

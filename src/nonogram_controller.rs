@@ -58,21 +58,33 @@ impl NonogramController {
                 }
             } else {
                 self.selected_cell = None;
+            }
 
-                // Check that coordinates are inside dimensions dropdown menu button.
-                if self.cursor_pos[0] >= dimensions_dropdown_menu_box[0] && self.cursor_pos[0] <= (dimensions_dropdown_menu_box[0] + dimensions_dropdown_menu_box[2]) {
-                    if self.cursor_pos[1] >= dimensions_dropdown_menu_box[1] && self.cursor_pos[1] <= (dimensions_dropdown_menu_box[1] + dimensions_dropdown_menu_box[3]) {
+            // Check that coordinates are inside dimensions dropdown menu button.
+            if self.cursor_pos[0] >= dimensions_dropdown_menu_box[0] && self.cursor_pos[0] <= (dimensions_dropdown_menu_box[0] + dimensions_dropdown_menu_box[2]) {
+                if self.cursor_pos[1] >= dimensions_dropdown_menu_box[1] && self.cursor_pos[1] <= (dimensions_dropdown_menu_box[1] + dimensions_dropdown_menu_box[3]) {
+                    if self.dimensions_dropdown_menu == ButtonInteraction::None {
                         self.dimensions_dropdown_menu = ButtonInteraction::Hover;
-                    } 
-                } else {
-                    self.dimensions_dropdown_menu = ButtonInteraction::None;
-                }
+                    }
+                } 
+            } else if self.dimensions_dropdown_menu == ButtonInteraction::Hover {
+                self.dimensions_dropdown_menu = ButtonInteraction::None;
             }
         }
         if let Some(Button::Mouse(MouseButton::Left)) = e.press_args() {
             if let Some(ind) = self.selected_cell {
                 self.mouse_d[0] = true;
                 self.current_action = self.nonogram.get(ind);
+            } 
+ 
+            match self.dimensions_dropdown_menu {
+                ButtonInteraction::Select => {
+                    self.dimensions_dropdown_menu = ButtonInteraction::None;
+                }
+                ButtonInteraction::Hover => {
+                    self.dimensions_dropdown_menu = ButtonInteraction::Select;
+                }
+                _ => (),
             }
         }
         if let Some(Button::Mouse(MouseButton::Right)) = e.press_args() {
