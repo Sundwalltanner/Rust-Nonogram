@@ -16,22 +16,23 @@ mod nonogram_board;
 mod nonogram_board_view;
 mod nonogram_controller;
 
+use crate::common::{INITIAL_WINDOW_SIZE, INITIAL_BOARD_DIMENSIONS};
+
 fn main() {
     let opengl = OpenGL::V3_2;
-    let settings = WindowSettings::new("Nonogram", [925, 875])
+    let settings = WindowSettings::new("Nonogram", INITIAL_WINDOW_SIZE)
         .graphics_api(opengl)
-        .samples(4)
-        .exit_on_esc(true);
+        .samples(4);
     let mut window: GlutinWindow = settings.build().expect("Could not create window");
 
     let mut events = Events::new(EventSettings::new().lazy(true));
     let mut gl = GlGraphics::new(opengl);
-    let mut nonogram = NonogramBoard::new();
+    let mut nonogram = NonogramBoard::new(INITIAL_BOARD_DIMENSIONS);
     nonogram.initialize();
     let mut nonogram_controller = NonogramController::new(nonogram);
     let mut nonogram_view_settings =
         NonogramViewSettings::new(nonogram_controller.nonogram.dimensions);
-    let nonogram_view = NonogramView::new(nonogram_view_settings);
+    let mut nonogram_view = NonogramView::new(nonogram_view_settings);
 
     use piston::AdvancedWindow;
     use piston::Window;
@@ -84,7 +85,9 @@ fn main() {
             });
         }
         if nonogram_controller.nonogram.reset_board {
-            nonogram_controller.nonogram = nonogram_board::NonogramBoard::new();
+            nonogram_controller.nonogram = nonogram_board::NonogramBoard::new(nonogram_controller.nonogram.next_dimensions);
+            nonogram_view_settings = NonogramViewSettings::new(nonogram_controller.nonogram.dimensions);
+            nonogram_view = NonogramView::new(nonogram_view_settings);
             nonogram_controller.nonogram.initialize();
         }
     }

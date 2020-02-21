@@ -4,6 +4,7 @@ use rand::distributions::{Bernoulli, Distribution};
 //#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct NonogramBoard {
     pub dimensions: [usize; 2],
+    pub next_dimensions: [usize; 2],
     pub data: Vec<Vec<u8>>,
     pub nums_per: [u64; 2],
     pub goal_nums: Vec<Vec<Vec<i8>>>,
@@ -18,9 +19,10 @@ pub struct NonogramBoard {
 }
 
 impl NonogramBoard {
-    pub fn new() -> NonogramBoard {
+    pub fn new(next_dimensions: [usize; 2]) -> NonogramBoard {
         let mut board = NonogramBoard {
-            dimensions: [15, 10],
+            dimensions: next_dimensions,
+            next_dimensions: next_dimensions,
             data: vec![vec![]],
             nums_per: [0; 2],
             goal_nums: vec![vec![vec![]]],
@@ -33,11 +35,11 @@ impl NonogramBoard {
             goal_black: 0,
             init_ratio: 0.5,
         };
-        board.init_vecs();
+        board.init_new();
         board
     }
 
-    fn init_vecs(&mut self) {
+    fn init_new(&mut self) {
         self.data.clear();
         self.goal_nums.clear();
         self.current_nums.clear();

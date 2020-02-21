@@ -5,7 +5,7 @@ use graphics::types::Color;
 use graphics::{Context, Graphics};
 use piston::window::Size;
 
-use crate::common::ButtonInteraction;
+use crate::common::{BOARD_SIZE, DIMENSIONS_CHOICES, ButtonInteraction};
 use crate::NonogramController;
 
 #[derive(Default)]
@@ -39,7 +39,7 @@ impl NonogramViewSettings {
     pub fn new(new_cell_dimensions: [usize; 2]) -> NonogramViewSettings {
         let mut view_settings = NonogramViewSettings {
             position: [300.0, 240.0],
-            size: 1000.0,
+            size: BOARD_SIZE,
             board_dimensions: [0.0; 2],
             cell_dimensions: [new_cell_dimensions[0], new_cell_dimensions[1]],
             cell_size: 0.0,
@@ -701,18 +701,46 @@ impl NonogramView {
                     );
                 }
                 ButtonInteraction::Select => {
-                    Rectangle::new_round(hex("C70039"), 5.0).draw(
+                    Rectangle::new_round(hex("5adbfd"), 5.0).draw(
                         settings.dimensions_dropdown_menu_box,
                         &c.draw_state,
                         c.transform,
                         g,
                     );
+
+                    for dimension in DIMENSIONS_CHOICES.iter() {
+                        Rectangle::new_round(hex("333333"), 5.0).draw(
+                            settings.dimensions_dropdown_menu_box,
+                            &c.draw_state,
+                            c.transform.trans(0.0, 30.0),
+                            g,
+                        );
+                        let dimensions_str = format!(
+                            "{}x{}",
+                            dimension[0], dimension[1]
+                        );
+                        let dimensions_size = 25;
+                        Text::new_color(hex("ffffff"), dimensions_size)
+                            .draw(
+                                &format!("{}", dimensions_str),
+                                glyphs,
+                                &c.draw_state,
+                                c.transform.trans(
+                                    settings.dimensions_dropdown_menu_box[0] + 5.0,
+                                    settings.dimensions_dropdown_menu_box[1]
+                                        + (settings.dimensions_dropdown_menu_box[3] / 2.0)
+                                        + ((dimensions_size as f64 * 0.75) / 2.0),
+                                ),
+                                g,
+                            )
+                            .unwrap_or_else(|_| panic!("text draw failed"));
+                    }
                 }
             }
 
             let dimensions_str = format!(
                 "{}x{}",
-                controller.nonogram.dimensions[0], controller.nonogram.dimensions[1]
+                controller.nonogram.next_dimensions[0], controller.nonogram.next_dimensions[1]
             );
             let dimensions_size = 25;
             Text::new_color(hex("ffffff"), dimensions_size)
@@ -762,7 +790,7 @@ impl NonogramView {
             // Restart game button.
             match controller.restart_button {
                 ButtonInteraction::None => {
-                    Rectangle::new_round(hex("333333"), 5.0).draw(
+                    Rectangle::new_round(hex("9e4c41"), 5.0).draw(
                         settings.restart_box,
                         &c.draw_state,
                         c.transform,
@@ -770,7 +798,7 @@ impl NonogramView {
                     );
                 }
                 ButtonInteraction::Hover => {
-                    Rectangle::new_round(hex("2D2D2D"), 5.0).draw(
+                    Rectangle::new_round(hex("773931"), 5.0).draw(
                         settings.restart_box,
                         &c.draw_state,
                         c.transform,
@@ -778,7 +806,7 @@ impl NonogramView {
                     );
                 }
                 ButtonInteraction::Select => {
-                    Rectangle::new_round(hex("C70039"), 5.0).draw(
+                    Rectangle::new_round(hex("633029"), 5.0).draw(
                         settings.restart_box,
                         &c.draw_state,
                         c.transform,

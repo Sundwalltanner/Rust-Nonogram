@@ -26,6 +26,9 @@ Once you've done all that, you're ready to learn how to play.
 The controls are really basic:
 * ```Left Mouse Click``` - Fill box if clear. Clear box if not clear.
 * ```Right Mouse Click``` - Mark box if clear. Clear box if not clear.
+* ```"R" Key``` - Restart. Generates a new game board. If the board dimensions have been altered, the new board will have those dimensions.
+* ```"Up Arrow" Key``` - Increase board dimensions. Press ```"R" Key``` to generate a new board with these dimensions.
+* ```"Down Arrow" Key``` - Decrease board dimensions. Press ```"R" Key``` to generate a new board with these dimensions.
 
 Marking boxes is simply for player convenience. Marked boxes are supposed to indicate which boxes you believe are definitely clear in the solution. You can reach the win condition without marking a single box as long as you have the correct boxes filled.
 

@@ -1,6 +1,6 @@
 use piston::input::GenericEvent;
 
-use crate::common::ButtonInteraction;
+use crate::common::{DIMENSIONS_CHOICES, ButtonInteraction};
 use crate::nonogram_board::NonogramBoard;
 
 /// Handles events for nonogram game.
@@ -19,6 +19,8 @@ pub struct NonogramController {
     current_action: u8,
     /// Current status of dimensions dropdown menu.
     pub dimensions_dropdown_menu: ButtonInteraction,
+    /// Current status of options within dimensions dropdown menu.
+    pub dimensions_dropdown_options: Vec<ButtonInteraction>,
     /// Current status of restart button.
     pub restart_button: ButtonInteraction,
 }
@@ -26,7 +28,7 @@ pub struct NonogramController {
 impl NonogramController {
     /// Creates a new nonogram controller.
     pub fn new(nonogram: NonogramBoard) -> NonogramController {
-        NonogramController {
+        let mut controller = NonogramController {
             nonogram,
             selected_cell: None,
             cursor_pos: [0.0; 2],
@@ -34,11 +36,25 @@ impl NonogramController {
             board_d: false,
             current_action: 0,
             dimensions_dropdown_menu: ButtonInteraction::None,
+            dimensions_dropdown_options: vec![],
             restart_button: ButtonInteraction::None,
+        };
+        controller.init_new();
+        controller
+    }
+
+    /// Initialize a new nonogram controller's attributes. Called within the new() function.
+    fn init_new(&mut self) {
+        self.dimensions_dropdown_options.clear();
+
+        for option in DIMENSIONS_CHOICES.iter() {
+            self.dimensions_dropdown_options.push(ButtonInteraction::None);
         }
     }
 
     /// Handles events.
+    //
+    // Refer to this documentation for event traits: https://docs.rs/piston/0.49.0/piston/index.html#traits
     pub fn event<E: GenericEvent>(
         &mut self,
         board_pos: [f64; 2],
@@ -49,6 +65,10 @@ impl NonogramController {
     ) {
         use piston::input::{Button, Key, MouseButton};
 
+        // Debug code for figuring out the ID of a particular event.
+        //println!("{:?}", e.event_id());
+
+        // Check if mouse button has been moved within window and save its location to pos: [f64; 2]
         if let Some(pos) = e.mouse_cursor_args() {
             self.cursor_pos = [pos[0], pos[1]];
 
@@ -103,6 +123,8 @@ impl NonogramController {
                 self.restart_button = ButtonInteraction::None;
             }
         }
+
+        // Check if left mouse button has been pressed.
         if let Some(Button::Mouse(MouseButton::Left)) = e.press_args() {
             self.mouse_d[0] = true;
 
@@ -131,6 +153,8 @@ impl NonogramController {
                 _ => (),
             }
         }
+
+        // Check if right mouse button has been pressed.
         if let Some(Button::Mouse(MouseButton::Right)) = e.press_args() {
             self.mouse_d[1] = true;
 
@@ -139,6 +163,8 @@ impl NonogramController {
                 self.current_action = self.nonogram.get(ind);
             }
         }
+
+        // Check if left mouse button has been released.
         if let Some(Button::Mouse(MouseButton::Left)) = e.release_args() {
             self.mouse_d[0] = false;
             self.board_d = false;
@@ -149,9 +175,52 @@ impl NonogramController {
                 self.restart_button = ButtonInteraction::None;
             }
         }
+
+        // Check if right mouse button has been released.
         if let Some(Button::Mouse(MouseButton::Right)) = e.release_args() {
             self.mouse_d[1] = false;
             self.board_d = false;
+        }
+        
+        // Check if ESC key has been released.
+        //
+        // Refer to this documentation for keyboard key names: http://docs.piston.rs/mush/piston/input/enum.Key.html
+        if let Some(Button::Keyboard(Key::Escape)) = e.release_args() {
+            println!("Escape key pressed"); 
+        }
+
+        // Check if "r" key has been released.
+        if let Some(Button::Keyboard(Key::R)) = e.release_args() {
+            self.nonogram.reset_board = true;
+        }
+
+        // Check if "Up" key has been released.
+        if let Some(Button::Keyboard(Key::Up)) = e.release_args() {
+            let dimensions_index = DIMENSIONS_CHOICES.iter().position(|&r| r == self.nonogram.next_dimensions).unwrap();
+            if dimensions_index < DIMENSIONS_CHOICES.len() - 1 {
+                self.nonogram.next_dimensions = DIMENSIONS_CHOICES[dimensions_index + 1];
+            } 
+        }
+
+        // Check if "Down" key has been released.
+        if let Some(Button::Keyboard(Key::Down)) = e.release_args() {
+            let dimensions_index = DIMENSIONS_CHOICES.iter().position(|&r| r == self.nonogram.next_dimensions).unwrap();
+            if dimensions_index > 0 {
+                self.nonogram.next_dimensions = DIMENSIONS_CHOICES[dimensions_index - 1];
+            }
+        }
+
+        // Check if window has been closed.
+        //
+        // This will check for window closure via clicking the "X" in the top right corner of the window,
+        // ALT+F4, or killing the program with task manager. This won't check for closure through ESC with
+        // the option ".exit_on_esc(true)" enabled in main.rs during the window's initial creation though, so
+        // that option isn't enabled.
+        //
+        // This might be useful later if we intend to save any user progress. The program will run everything in
+        // this block before it actually closes the program.
+        if let Some(window_closed) = e.close_args() {
+            println!("Nonogram game closed. Progress hasn't been saved, as this feature hasn't been implemented.");
         }
     }
 }
