@@ -55,7 +55,9 @@ You'll notice as you progress that the hint numbers will automatically change to
 
 When you win, a screen like this will pop up. This UI is subject to change:
 
-![Win screen](https://i.imgur.com/eRgAWcQ.png)
+![Win screen](https://i.imgur.com/1VoIUzt.png)
+
+As seen in the win screen image above, the final image of the board is shown to the user along with a randomly generated comment about how my version of Picross doesn't actually use real pictures of anything, some stats about the previous game, and a button at the bottom that allows the user to start a new game.
 
 Here's a gif of me solving a basic 5x5 Nonogram from start to finish:
 
@@ -79,6 +81,14 @@ Anyways, here's a picture of a solved 30x30 nonogram. It didn't take me 13 secon
 ## What are you still working on?
 This isn't due for a few more weeks, so I've probably got plenty of time to hit these stretch goals:
 
-* Do something with the current win state screen. Right now, a menu pops up when you win, but there's no way to back out of it and generate a new nonogram.
+* It turns out that Piston makes it incredibly easy to detect when the game has been closed, so maybe I should utilize this in order to save the user's progress? I've never had to do something like this, so I was just gonna do a basically read and write from a .txt file or something. We need to save:
+    * Whether or not user is at a win screen.
+    * Board state. We only need to save what cells are not filled, filled, and marked. We don't need to save the current state of the hint numbers.
+    * Goal hint numbers.
+    * Number of wins? Maybe keep track of wins per board dimension? Keep track of win history indicating how much time each one took?
+* Pause menu with buttons:
+    * Resume - resumes the game in progress.
+    * How to Play - Tries to tell the user how to play the game. Tell them what the keybindings are.
+    * Quit - exit the game.
 * Potentially look into generating only unique goal states? This didn't end up being a huge issue, because of the method I'm using to generate the goal state. It will be easy enough to compare the current state to the goal state for win conditions. But it might be worthwhile to look into an algorithm for generating nonogram puzzles with unique goal states, as mine currently has the ability to produce a goal state that can be reached by more than one method.
 * Tests, better comments, make Rust happy, make Clippy happy, etc... There's always stuff to work on...

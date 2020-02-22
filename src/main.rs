@@ -57,6 +57,7 @@ fn main() {
             nonogram_view.settings.board_dimensions,
             nonogram_view.settings.dimensions_dropdown_menu_box,
             nonogram_view.settings.restart_box,
+            nonogram_view.settings.new_game_box,
             &e,
         );
         if let Some(args) = e.render_args() {

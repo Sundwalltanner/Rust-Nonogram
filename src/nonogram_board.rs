@@ -260,7 +260,7 @@ impl NonogramBoard {
     pub fn initialize(&mut self) {
         self.set_goal();
         self.goal_nums = self.get_nums();
-        self.wipe_board();
+        //self.wipe_board();
         self.game_start = Some(Utc::now());
     }
 }

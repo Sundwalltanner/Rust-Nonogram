@@ -4,8 +4,9 @@ use graphics::color::hex;
 use graphics::types::Color;
 use graphics::{Context, Graphics};
 use piston::window::Size;
+use rand::seq::SliceRandom;
 
-use crate::common::{BOARD_SIZE, DIMENSIONS_CHOICES, ButtonInteraction};
+use crate::common::{BOARD_SIZE, DIMENSIONS_CHOICES, IMAGE_PRE, IMAGE_NAMES, ButtonInteraction};
 use crate::NonogramController;
 
 #[derive(Default)]
@@ -31,7 +32,10 @@ pub struct NonogramViewSettings {
     pub marked_cell_background_color: Color,
     pub text_color: Color,
     pub dimensions_dropdown_menu_box: [f64; 4],
+    pub win_box_rect: [f64; 4],
     pub restart_box: [f64; 4],
+    pub new_game_box: [f64; 4],
+    pub win_critique: String,
 }
 
 impl NonogramViewSettings {
@@ -58,18 +62,41 @@ impl NonogramViewSettings {
             marked_cell_background_color: hex("f77b00"),
             text_color: hex("ffffff"),
             dimensions_dropdown_menu_box: [300.0, 10.0, 100.0, 30.0],
+            win_box_rect: [600.0, 500.0, 250.0, 200.0],
             restart_box: [450.0, 10.0, 100.0, 30.0],
+            new_game_box: [450.0, 10.0, 100.0, 30.0],
+            win_critique: "".to_string(),
         };
-        view_settings.calc_dimensions();
+        view_settings.init_new();
         view_settings
     }
-
-    fn calc_dimensions(&mut self) {
+    
+    fn init_new(&mut self) {
+        // Because the dimensions of the board can vary, we need to initialize the locations of cells based on these dimensions
+        // and the size of the board which is set by the BOARD_SIZE const in common.rs.
         let cols = self.cell_dimensions[0] as f64;
         let rows = self.cell_dimensions[1] as f64;
         self.board_dimensions[0] = (cols / (cols + rows)) * self.size;
         self.board_dimensions[1] = (rows / (cols + rows)) * self.size;
         self.cell_size = self.board_dimensions[0] / cols;
+
+        // A random string that's displayed near an image of the final board upon winning.
+        // Ends up saying something like, "That looks just like Abraham Lincoln!".
+        //
+        // Makes fun of the fact that my version of the nonogram board game uses randomly generated
+        // boards rather than ones that actually form images of things.
+        if let Some(critique_1) = IMAGE_PRE.choose(&mut rand::thread_rng()) {
+            if let Some(critique_2) = IMAGE_NAMES.choose(&mut rand::thread_rng()) {
+                self.win_critique = format!("{} {}{}", critique_1[0], critique_2, critique_1[1]);
+            }
+        }
+
+        self.win_box_rect[0] = self.win_box_rect[0] - (self.win_box_rect[2] / 2.0);
+        self.win_box_rect[1] = self.win_box_rect[1] - (self.win_box_rect[3] / 2.0);
+
+        self.new_game_box[2] = self.win_box_rect[2];
+        self.new_game_box[0] = self.win_box_rect[0] + (self.win_box_rect[2] / 2.0) - (self.new_game_box[2] / 2.0);
+        self.new_game_box[1] = self.win_box_rect[1] + self.win_box_rect[3] - self.new_game_box[3];
     }
 }
 
@@ -121,51 +148,39 @@ impl NonogramView {
 
         // Draw win screen.
         if let Some(ind) = controller.nonogram.game_end {
-            //if true {
-            let mut win_box_rect = [
-                window_size.width / 2.0,
-                window_size.height / 2.0,
-                300.0,
-                500.0,
-            ];
-
-            win_box_rect[0] = win_box_rect[0] - (win_box_rect[2] / 2.0);
-            win_box_rect[1] = win_box_rect[1] - (win_box_rect[3] / 2.0);
-            //println!("Width: {}, Height: {}", win_box_rect[0], win_box_rect[1]);
-
+        //if true {
             Rectangle::new_round(hex("333333"), 10.0).draw(
-                win_box_rect,
+                settings.win_box_rect,
                 &c.draw_state,
                 c.transform,
                 g,
             );
-
-            // Draw win title.
-            let win_title_str = "YOU WON".to_string();
-            let win_title_size = 25;
-            let win_title_width = match glyphs.width(win_title_size, &win_title_str) {
+            // Randomly generated artist critique of player's winning image.
+            let critique_size = 25;
+            let critique_width = match glyphs.width(critique_size, &settings.win_critique) {
                 Ok(v) => v,
                 Err(e) => 0.0,
             };
-            let win_title_loc = [
-                win_box_rect[0] + (win_box_rect[2] / 2.0) - (win_title_width / 2.0),
-                180.0,
+            let critique_loc = [
+                settings.win_box_rect[0] + (settings.win_box_rect[2] / 2.0) - (critique_width / 2.0),
+                settings.win_box_rect[1] - 30.0,
             ];
-            Text::new_color(hex("ffffff"), win_title_size)
+            Text::new_color(hex("ffffff"), critique_size)
                 .draw(
-                    &win_title_str,
+                    &settings.win_critique,
                     glyphs,
                     &c.draw_state,
-                    c.transform.trans(win_title_loc[0], win_title_loc[1]),
+                    c.transform
+                        .trans(critique_loc[0], critique_loc[1]),
                     g,
                 )
                 .unwrap_or_else(|_| panic!("text draw failed"));
 
-            let mut stat_row_y = 250.0;
-            let stat_row_margins = [30.0, 30.0];
+            let mut stat_row_y = settings.win_box_rect[1] + 30.0;
+            let stat_row_margins = [10.0, 30.0];
             let stat_row_x = [
-                win_box_rect[2] + stat_row_margins[0],
-                win_box_rect[2] + win_box_rect[0] - stat_row_margins[0],
+                settings.win_box_rect[0] + stat_row_margins[0],
+                settings.win_box_rect[2] + settings.win_box_rect[0] - stat_row_margins[0],
             ];
 
             // Left-aligned timer title.
@@ -186,7 +201,7 @@ impl NonogramView {
                 Ok(v) => v,
                 Err(e) => 0.0,
             };
-            Text::new_color(hex("ffffff"), 25)
+            Text::new_color(hex("ffffff"), timer_size)
                 .draw(
                     &format!("{}", timer_str),
                     glyphs,
@@ -215,7 +230,7 @@ impl NonogramView {
                 Ok(v) => v,
                 Err(e) => 0.0,
             };
-            Text::new_color(hex("ffffff"), 25)
+            Text::new_color(hex("ffffff"), black_count_size)
                 .draw(
                     &format!("{}", black_count_str),
                     glyphs,
@@ -248,7 +263,7 @@ impl NonogramView {
                 Ok(v) => v,
                 Err(e) => 0.0,
             };
-            Text::new_color(hex("ffffff"), 25)
+            Text::new_color(hex("ffffff"), total_count_size)
                 .draw(
                     &format!("{}", total_count_str),
                     glyphs,
@@ -282,7 +297,7 @@ impl NonogramView {
                     Ok(v) => v,
                     Err(e) => 0.0,
                 };
-            Text::new_color(hex("ffffff"), 25)
+            Text::new_color(hex("ffffff"), black_total_ratio_size)
                 .draw(
                     &format!("{}", black_total_ratio_str),
                     glyphs,
@@ -317,7 +332,7 @@ impl NonogramView {
                 Ok(v) => v,
                 Err(e) => 0.0,
             };
-            Text::new_color(hex("ffffff"), 25)
+            Text::new_color(hex("ffffff"), dimensions_size)
                 .draw(
                     &format!("{}", dimensions_str),
                     glyphs,
@@ -327,6 +342,99 @@ impl NonogramView {
                     g,
                 )
                 .unwrap_or_else(|_| panic!("text draw failed"));
+
+            // New game button.
+            match controller.new_game_button {
+                ButtonInteraction::None => {
+                    Rectangle::new_round(hex("9e4c41"), 5.0).draw(
+                        settings.new_game_box,
+                        &c.draw_state,
+                        c.transform,
+                        g,
+                    );
+                }
+                ButtonInteraction::Hover => {
+                    Rectangle::new_round(hex("773931"), 5.0).draw(
+                        settings.new_game_box,
+                        &c.draw_state,
+                        c.transform,
+                        g,
+                    );
+                }
+                ButtonInteraction::Select => {
+                    Rectangle::new_round(hex("633029"), 5.0).draw(
+                        settings.new_game_box,
+                        &c.draw_state,
+                        c.transform,
+                        g,
+                    );
+                }
+            }
+
+            // New game button text.
+            let new_game_button_str = "NEW GAME".to_string();
+            let new_game_button_size = 25;
+            let new_game_button_width =
+                match glyphs.width(new_game_button_size, &new_game_button_str) {
+                    Ok(v) => v,
+                    Err(e) => 0.0,
+                };
+            let new_game_button_loc = [
+                settings.new_game_box[0] + (settings.new_game_box[2] / 2.0) - (new_game_button_width / 2.0),
+                settings.new_game_box[1] + (settings.new_game_box[3] / 2.0) + ((new_game_button_size as f64 * 0.75) / 2.0)
+            ];
+            Text::new_color(hex("ffffff"), new_game_button_size)
+                .draw(
+                    &new_game_button_str,
+                    glyphs,
+                    &c.draw_state,
+                    c.transform
+                        .trans(new_game_button_loc[0], new_game_button_loc[1]),
+                    g,
+                )
+                .unwrap_or_else(|_| panic!("text draw failed"));
+
+            // Draw board background.
+            let mut board_rect = [
+                settings.win_box_rect[0],
+                settings.win_box_rect[1] - 300.0,
+                settings.board_dimensions[0] / 2.0,
+                settings.board_dimensions[1] / 2.0,
+            ];
+
+            board_rect[0] += (settings.win_box_rect[2] / 2.0) - (board_rect[2] / 2.0);
+            
+            Rectangle::new(settings.background_color).draw(
+                board_rect,
+                &c.draw_state,
+                c.transform,
+                g,
+            );
+
+            // Draw the game winning image.
+            for col in 0..settings.cell_dimensions[0] {
+                for row in 0..settings.cell_dimensions[1] {
+                    let value = controller.nonogram.get([col, row]);
+                    let pos = [
+                        col as f64 * settings.cell_size,
+                        row as f64 * settings.cell_size,
+                    ];
+                    if value == 1 {
+                        let cell_rect = [
+                            board_rect[0] + (pos[0] / 2.0),
+                            board_rect[1] + (pos[1] / 2.0),
+                            settings.cell_size / 2.0,
+                            settings.cell_size / 2.0,
+                        ];
+                        Rectangle::new(settings.filled_cell_background_color).draw(
+                            cell_rect,
+                            &c.draw_state,
+                            c.transform,
+                            g,
+                        );
+                    }
+                }
+            }
         } else {
             let board_rect = [
                 settings.position[0],
