@@ -1,4 +1,4 @@
-use chrono::Duration;
+use std::time::Duration;
 use graphics::character::CharacterCache;
 use graphics::color::hex;
 use graphics::types::Color;
@@ -121,7 +121,6 @@ impl NonogramView {
         material_icons_glyphs: &mut C,
         c: &Context,
         g: &mut G,
-        duration: Duration,
         count_black: u64,
         goal_black: u64,
         window_size: Size,
@@ -136,7 +135,7 @@ impl NonogramView {
         // Rectangle the size of the entire inner window.
         let window_rect = [0.0, 0.0, window_size.width, window_size.height];
 
-        let total_seconds = duration.num_seconds();
+        let total_seconds = controller.nonogram.duration.as_secs();
         let total_mins = total_seconds / 60;
         let total_hrs = total_mins / 60;
         let rem_seconds = total_seconds - total_mins * 60;
@@ -147,7 +146,7 @@ impl NonogramView {
         // Rectangle::new(hex("000000E6")).draw(window_rect, &c.draw_state, c.transform, g);
 
         // Draw win screen.
-        if let Some(ind) = controller.nonogram.game_end {
+        if controller.nonogram.end_game_screen {
         //if true {
             Rectangle::new_round(hex("333333"), 10.0).draw(
                 settings.win_box_rect,

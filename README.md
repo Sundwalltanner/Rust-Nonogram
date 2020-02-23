@@ -63,6 +63,13 @@ Here's a gif of me solving a basic 5x5 Nonogram from start to finish:
 
 ![Gif of solving 5x5 Nonogram](http://i.imgur.com/WaEqNRR.gif)
 
+## Save progress
+Progress is automatically saved to a file named ```savedata.json``` in the main directory for this project whenever the program is exited. This includes pressing the ```X``` in the top right corner of the window, ```ALT+F4'ing```, killing it with task manager, etc...
+
+Eventually this will keep track of wins or something, but for now, it just keeps track of current progress.
+
+Currently, if I make any updates to what is tracked within savedata.json, if you have an older version of that file, the program will crash and inform you that you need to delete your savedata.json file. I'll try and figure out a way to get around this, but for now, that's just the way it is.
+
 ## Early Access
 This is currently in development. In the meantime, here's a gif of it running:
 
@@ -81,11 +88,6 @@ Anyways, here's a picture of a solved 30x30 nonogram. It didn't take me 13 secon
 ## What are you still working on?
 This isn't due for a few more weeks, so I've probably got plenty of time to hit these stretch goals:
 
-* It turns out that Piston makes it incredibly easy to detect when the game has been closed, so maybe I should utilize this in order to save the user's progress? I've never had to do something like this, so I was just gonna do a basically read and write from a .txt file or something. We need to save:
-    * Whether or not user is at a win screen.
-    * Board state. We only need to save what cells are not filled, filled, and marked. We don't need to save the current state of the hint numbers.
-    * Goal hint numbers.
-    * Number of wins? Maybe keep track of wins per board dimension? Keep track of win history indicating how much time each one took?
 * Pause menu with buttons:
     * Resume - resumes the game in progress.
     * How to Play - Tries to tell the user how to play the game. Tell them what the keybindings are.

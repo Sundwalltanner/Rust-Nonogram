@@ -1,5 +1,20 @@
-use chrono::{DateTime, Duration, Utc};
+use std::time::{Duration, Instant};
 use rand::distributions::{Bernoulli, Distribution};
+use std::fs;
+use serde::{Deserialize, Serialize};
+use serde_json::{Result, Value};
+
+#[derive(Serialize, Deserialize)]
+pub struct SavedBoard {
+    pub dimensions: [usize; 2],
+    pub next_dimensions: [usize; 2],
+    pub data: Vec<Vec<u8>>,
+    pub goal_nums: Vec<Vec<Vec<i8>>>,
+    pub count_black: u64,
+    pub goal_black: u64,
+    pub duration: Duration,
+    pub end_game_screen: bool,
+}
 
 //#[derive(Debug, Clone, Copy, PartialEq)]
 pub struct NonogramBoard {
@@ -9,9 +24,11 @@ pub struct NonogramBoard {
     pub nums_per: [u64; 2],
     pub goal_nums: Vec<Vec<Vec<i8>>>,
     pub current_nums: Vec<Vec<Vec<i8>>>,
-    pub game_start: Option<DateTime<Utc>>,
-    pub last_time: Option<DateTime<Utc>>,
-    pub game_end: Option<DateTime<Utc>>,
+    pub game_start: Option<Instant>,
+    pub last_time: Option<Instant>,
+    pub game_end: Option<Instant>,
+    pub end_game_screen: bool,
+    pub duration: Duration,
     pub reset_board: bool,
     pub count_black: u64,
     pub goal_black: u64,
@@ -19,7 +36,7 @@ pub struct NonogramBoard {
 }
 
 impl NonogramBoard {
-    pub fn new(next_dimensions: [usize; 2]) -> NonogramBoard {
+    pub fn new(next_dimensions: [usize; 2], reset_board: bool) -> NonogramBoard {
         let mut board = NonogramBoard {
             dimensions: next_dimensions,
             next_dimensions: next_dimensions,
@@ -29,7 +46,9 @@ impl NonogramBoard {
             current_nums: vec![vec![vec![]]],
             game_start: None,
             game_end: None,
-            reset_board: false,
+            end_game_screen: false,
+            duration: Duration::from_secs(0),
+            reset_board: reset_board,
             last_time: None,
             count_black: 0,
             goal_black: 0,
@@ -44,18 +63,40 @@ impl NonogramBoard {
         self.goal_nums.clear();
         self.current_nums.clear();
 
-        for col in 0..self.dimensions[0] {
-            self.data.push(vec![0; self.dimensions[1]]);
-        }
+        let save_data = match fs::read_to_string("savedata.json") {
+            Err(e) => "".to_string(),
+            Ok(e) => e,
+        };
 
-        self.nums_per[0] = (self.dimensions[1] as f64 / 2.0_f64).round() as u64;
-        self.nums_per[1] = (self.dimensions[0] as f64 / 2.0_f64).round() as u64;
-
-        for i in 0..2 {
-            self.goal_nums
-                .push(vec![vec![0; self.nums_per[i] as usize]; self.dimensions[i]]);
-            self.current_nums
-                .push(vec![vec![0; self.nums_per[i] as usize]; self.dimensions[i]]);
+        if save_data.is_empty() || self.reset_board {
+            for col in 0..self.dimensions[0] {
+                self.data.push(vec![0; self.dimensions[1]]);
+            }
+    
+            self.nums_per[0] = (self.dimensions[1] as f64 / 2.0_f64).round() as u64;
+            self.nums_per[1] = (self.dimensions[0] as f64 / 2.0_f64).round() as u64;
+    
+            for i in 0..2 {
+                self.goal_nums
+                    .push(vec![vec![0; self.nums_per[i] as usize]; self.dimensions[i]]);
+                self.current_nums
+                    .push(vec![vec![0; self.nums_per[i] as usize]; self.dimensions[i]]);
+            }
+            
+            self.initialize();
+        } else {
+            let v: SavedBoard = serde_json::from_str(&save_data).expect("Your savedata.json file is incompatible. Delete it.");
+            self.dimensions = v.dimensions;
+            self.next_dimensions = v.next_dimensions;
+            self.data = v.data;
+            self.goal_nums = v.goal_nums;
+            self.count_black = v.count_black;
+            self.goal_black = v.goal_black;
+            self.duration = v.duration;
+            self.nums_per[0] = (self.dimensions[1] as f64 / 2.0_f64).round() as u64;
+            self.nums_per[1] = (self.dimensions[0] as f64 / 2.0_f64).round() as u64;
+            self.game_start = Some(Instant::now() - self.duration);
+            self.end_game_screen = v.end_game_screen;
         }
     }
 
@@ -97,8 +138,9 @@ impl NonogramBoard {
         self.current_nums = self.get_nums();
         self.update_crossouts();
 
-        if self.check_win() {
-            self.game_end = Some(Utc::now());
+        self.end_game_screen = self.check_win();
+        if self.end_game_screen {
+            self.game_end = Some(Instant::now());
         }
     }
 
@@ -260,7 +302,8 @@ impl NonogramBoard {
     pub fn initialize(&mut self) {
         self.set_goal();
         self.goal_nums = self.get_nums();
-        //self.wipe_board();
-        self.game_start = Some(Utc::now());
+        self.wipe_board();
+        self.game_start = Some(Instant::now());
+        self.reset_board = false;
     }
 }

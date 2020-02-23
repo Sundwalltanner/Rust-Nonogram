@@ -1,4 +1,9 @@
 use piston::input::GenericEvent;
+use serde_json::json;
+use std::error::Error;
+use std::fs::File;
+use std::io::prelude::*;
+use std::path::Path;
 
 use crate::common::{DIMENSIONS_CHOICES, ButtonInteraction};
 use crate::nonogram_board::NonogramBoard;
@@ -72,7 +77,7 @@ impl NonogramController {
         // Debug code for figuring out the ID of a particular event.
         //println!("{:?}", e.event_id());
 
-        if let Some(ind) = self.nonogram.game_end {
+        if self.nonogram.end_game_screen {
         //if true {
             if let Some(pos) = e.mouse_cursor_args() {
                 self.cursor_pos = [pos[0], pos[1]];
@@ -118,6 +123,37 @@ impl NonogramController {
                     self.nonogram.reset_board = true;
                     self.new_game_button = ButtonInteraction::None;
                 }
+            }
+
+            if let Some(window_closed) = e.close_args() {
+                let path = Path::new("savedata.json");
+                let display = path.display();
+
+                let mut file = match File::create(&path) {
+                    Err(why) => panic!("couldn't create {}: {}", display, why.description()),
+                    Ok(file) => file,
+                };
+            
+                // Serialize it to a JSON string.
+                //let j = serde_json::to_string(&self.nonogram.goal_nums);
+
+                //println!("{:?}", j);
+                let save_data = json!({
+                    "dimensions": self.nonogram.dimensions,
+                    "next_dimensions": self.nonogram.next_dimensions,
+                    "data": self.nonogram.data,
+                    "goal_nums": self.nonogram.goal_nums,
+                    "count_black": self.nonogram.count_black,
+                    "goal_black": self.nonogram.goal_black,
+                    "duration": self.nonogram.duration,
+                });
+                
+                match serde_json::to_writer_pretty(file, &save_data) {
+                    Err(why) => panic!("couldn't write to {}: {}", display, why.description()),
+                    Ok(_) => println!("successfully wrote to {}", display),
+                }
+                
+                println!("Nonogram game closed. Progress has been successfully saved.");
             }
         } else {
             // Check if mouse button has been moved within window and save its location to pos: [f64; 2]
@@ -261,19 +297,47 @@ impl NonogramController {
                     self.nonogram.next_dimensions = DIMENSIONS_CHOICES[dimensions_index - 1];
                 }
             }
+        }
 
-            // Check if window has been closed.
-            //
-            // This will check for window closure via clicking the "X" in the top right corner of the window,
-            // ALT+F4, or killing the program with task manager. This won't check for closure through ESC with
-            // the option ".exit_on_esc(true)" enabled in main.rs during the window's initial creation though, so
-            // that option isn't enabled.
-            //
-            // This might be useful later if we intend to save any user progress. The program will run everything in
-            // this block before it actually closes the program.
-            if let Some(window_closed) = e.close_args() {
-                println!("Nonogram game closed. Progress hasn't been saved, as this feature hasn't been implemented.");
+        // Check if window has been closed.
+        //
+        // This will check for window closure via clicking the "X" in the top right corner of the window,
+        // ALT+F4, or killing the program with task manager. This won't check for closure through ESC with
+        // the option ".exit_on_esc(true)" enabled in main.rs during the window's initial creation though, so
+        // that option isn't enabled.
+        //
+        // This might be useful later if we intend to save any user progress. The program will run everything in
+        // this block before it actually closes the program.
+        if let Some(window_closed) = e.close_args() {
+            let path = Path::new("savedata.json");
+            let display = path.display();
+
+            let mut file = match File::create(&path) {
+                Err(why) => panic!("couldn't create {}: {}", display, why.description()),
+                Ok(file) => file,
+            };
+        
+            // Serialize it to a JSON string.
+            //let j = serde_json::to_string(&self.nonogram.goal_nums);
+
+            //println!("{:?}", j);
+            let save_data = json!({
+                "dimensions": self.nonogram.dimensions,
+                "next_dimensions": self.nonogram.next_dimensions,
+                "data": self.nonogram.data,
+                "goal_nums": self.nonogram.goal_nums,
+                "count_black": self.nonogram.count_black,
+                "goal_black": self.nonogram.goal_black,
+                "duration": self.nonogram.duration,
+                "end_game_screen": self.nonogram.end_game_screen,
+            });
+            
+            match serde_json::to_writer_pretty(file, &save_data) {
+                Err(why) => panic!("couldn't write to {}: {}", display, why.description()),
+                Ok(_) => println!("successfully wrote to {}", display),
             }
+            
+            println!("Nonogram game closed. Progress has been successfully saved.");
         }
     }
 }

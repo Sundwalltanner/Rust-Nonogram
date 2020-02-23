@@ -1,4 +1,6 @@
-use chrono::{DateTime, Duration, Utc};
+use std::time::{Instant, Duration};
+use std::fs;
+use serde_json::{Result, Value};
 use glutin_window::GlutinWindow;
 use graphics::color::hex;
 use opengl_graphics::{Filter, GlGraphics, GlyphCache, OpenGL, TextureSettings};
@@ -24,11 +26,9 @@ fn main() {
         .graphics_api(opengl)
         .samples(4);
     let mut window: GlutinWindow = settings.build().expect("Could not create window");
-
     let mut events = Events::new(EventSettings::new().lazy(true));
     let mut gl = GlGraphics::new(opengl);
-    let mut nonogram = NonogramBoard::new(INITIAL_BOARD_DIMENSIONS);
-    nonogram.initialize();
+    let mut nonogram = NonogramBoard::new(INITIAL_BOARD_DIMENSIONS, false);
     let mut nonogram_controller = NonogramController::new(nonogram);
     let mut nonogram_view_settings =
         NonogramViewSettings::new(nonogram_controller.nonogram.dimensions);
@@ -63,13 +63,15 @@ fn main() {
         if let Some(args) = e.render_args() {
             gl.draw(args.viewport(), |c, g| {
                 use graphics::clear;
-                let dur = match nonogram_controller.nonogram.game_start {
-                    Some(game_start) => match nonogram_controller.nonogram.game_end {
-                        Some(game_end) => game_end - game_start,
-                        None => Utc::now() - game_start,
-                    },
-                    None => Duration::seconds(0),
-                };
+                if !nonogram_controller.nonogram.end_game_screen {
+                    nonogram_controller.nonogram.duration = match nonogram_controller.nonogram.game_start {
+                        Some(game_start) => match nonogram_controller.nonogram.game_end {
+                            Some(game_end) => game_end - game_start,
+                            None => Instant::now() - game_start,
+                        },
+                        None => Duration::from_secs(0),
+                    };
+                }
                 clear(hex("222222"), g);
                 nonogram_view.draw(
                     &nonogram_controller,
@@ -78,7 +80,6 @@ fn main() {
                     material_icons_glyphs,
                     &c,
                     g,
-                    dur,
                     nonogram_controller.nonogram.count_black,
                     nonogram_controller.nonogram.goal_black,
                     window.size(),
@@ -86,10 +87,9 @@ fn main() {
             });
         }
         if nonogram_controller.nonogram.reset_board {
-            nonogram_controller.nonogram = nonogram_board::NonogramBoard::new(nonogram_controller.nonogram.next_dimensions);
+            nonogram_controller.nonogram = nonogram_board::NonogramBoard::new(nonogram_controller.nonogram.next_dimensions, true);
             nonogram_view_settings = NonogramViewSettings::new(nonogram_controller.nonogram.dimensions);
             nonogram_view = NonogramView::new(nonogram_view_settings);
-            nonogram_controller.nonogram.initialize();
         }
     }
 }
