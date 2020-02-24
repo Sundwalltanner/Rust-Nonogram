@@ -1,6 +1,4 @@
 use std::time::{Instant, Duration};
-use std::fs;
-use serde_json::{Result, Value};
 use glutin_window::GlutinWindow;
 use graphics::color::hex;
 use opengl_graphics::{Filter, GlGraphics, GlyphCache, OpenGL, TextureSettings};
@@ -28,14 +26,13 @@ fn main() {
     let mut window: GlutinWindow = settings.build().expect("Could not create window");
     let mut events = Events::new(EventSettings::new().lazy(true));
     let mut gl = GlGraphics::new(opengl);
-    let mut nonogram = NonogramBoard::new(INITIAL_BOARD_DIMENSIONS, false);
+    let nonogram = NonogramBoard::new(INITIAL_BOARD_DIMENSIONS, false);
     let mut nonogram_controller = NonogramController::new(nonogram);
     let mut nonogram_view_settings =
         NonogramViewSettings::new(nonogram_controller.nonogram.dimensions);
     let mut nonogram_view = NonogramView::new(nonogram_view_settings);
 
     use piston::AdvancedWindow;
-    use piston::Window;
 
     let assets = find_folder::Search::ParentsThenKids(3, 3)
         .for_folder("assets")

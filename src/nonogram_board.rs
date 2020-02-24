@@ -2,7 +2,6 @@ use std::time::{Duration, Instant};
 use rand::distributions::{Bernoulli, Distribution};
 use std::fs;
 use serde::{Deserialize, Serialize};
-use serde_json::{Result, Value};
 
 #[derive(Serialize, Deserialize)]
 pub struct SavedBoard {
@@ -63,13 +62,10 @@ impl NonogramBoard {
         self.goal_nums.clear();
         self.current_nums.clear();
 
-        let save_data = match fs::read_to_string("savedata.json") {
-            Err(e) => "".to_string(),
-            Ok(e) => e,
-        };
+        let save_data = fs::read_to_string("savedata.json").unwrap_or("".to_string());
 
         if save_data.is_empty() || self.reset_board {
-            for col in 0..self.dimensions[0] {
+            for _col in 0..self.dimensions[0] {
                 self.data.push(vec![0; self.dimensions[1]]);
             }
     
@@ -151,7 +147,7 @@ impl NonogramBoard {
 
     /// Setup randomly generated goal nonogram.
     pub fn set_goal(&mut self) {
-        let mut rng = Bernoulli::new(self.init_ratio).unwrap();
+        let rng = Bernoulli::new(self.init_ratio).unwrap();
         for col in 0..self.dimensions[0] {
             for row in 0..self.dimensions[1] {
                 if rng.sample(&mut rand::thread_rng()) {

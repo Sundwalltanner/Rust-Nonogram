@@ -2,7 +2,6 @@ use piston::input::GenericEvent;
 use serde_json::json;
 use std::error::Error;
 use std::fs::File;
-use std::io::prelude::*;
 use std::path::Path;
 
 use crate::common::{DIMENSIONS_CHOICES, ButtonInteraction};
@@ -55,7 +54,7 @@ impl NonogramController {
     fn init_new(&mut self) {
         self.dimensions_dropdown_options.clear();
 
-        for option in DIMENSIONS_CHOICES.iter() {
+        for _option in DIMENSIONS_CHOICES.iter() {
             self.dimensions_dropdown_options.push(ButtonInteraction::None);
         }
     }
@@ -125,11 +124,11 @@ impl NonogramController {
                 }
             }
 
-            if let Some(window_closed) = e.close_args() {
+            if let Some(_window_closed) = e.close_args() {
                 let path = Path::new("savedata.json");
                 let display = path.display();
 
-                let mut file = match File::create(&path) {
+                let file = match File::create(&path) {
                     Err(why) => panic!("couldn't create {}: {}", display, why.description()),
                     Ok(file) => file,
                 };
@@ -308,11 +307,11 @@ impl NonogramController {
         //
         // This might be useful later if we intend to save any user progress. The program will run everything in
         // this block before it actually closes the program.
-        if let Some(window_closed) = e.close_args() {
+        if let Some(_window_closed) = e.close_args() {
             let path = Path::new("savedata.json");
             let display = path.display();
 
-            let mut file = match File::create(&path) {
+            let file = match File::create(&path) {
                 Err(why) => panic!("couldn't create {}: {}", display, why.description()),
                 Ok(file) => file,
             };
