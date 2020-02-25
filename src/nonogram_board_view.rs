@@ -16,6 +16,8 @@ pub struct NonogramViewSettings {
     pub board_dimensions: [f64; 2],
     pub cell_dimensions: [usize; 2],
     pub cell_size: f64,
+    pub win_board_dimensions: [f64; 2],
+    pub win_cell_size: f64,
     pub background_color: Color,
     pub border_color: Color,
     pub board_edge_color: Color,
@@ -46,6 +48,8 @@ impl NonogramViewSettings {
             board_dimensions: [0.0; 2],
             cell_dimensions: [new_cell_dimensions[0], new_cell_dimensions[1]],
             cell_size: 0.0,
+            win_board_dimensions: [0.0, 240.0],
+            win_cell_size: 0.0,
             background_color: hex("f7f5f6"),
             border_color: hex("cccccc"),
             board_edge_color: hex("cccccc"),
@@ -78,6 +82,12 @@ impl NonogramViewSettings {
         self.board_dimensions[0] = (cols / (cols + rows)) * self.size;
         self.board_dimensions[1] = (rows / (cols + rows)) * self.size;
         self.cell_size = self.board_dimensions[0] / cols;
+
+        // The board size when it's displayed during the end game screen needs to be a certain height in order to not end up
+        // overlapping the stats box. Everything else from the width of the board to the size of the cells needs to be based around
+        // this maximum height.
+        self.win_cell_size = self.win_board_dimensions[1] / rows;
+        self.win_board_dimensions[0] = self.win_cell_size * cols;
 
         // A random string that's displayed near an image of the final board upon winning.
         // Ends up saying something like, "That looks just like Abraham Lincoln!".
@@ -373,8 +383,8 @@ impl NonogramView {
             let mut board_rect = [
                 settings.win_box_rect[0],
                 settings.win_box_rect[1] - 300.0,
-                settings.board_dimensions[0] / 2.0,
-                settings.board_dimensions[1] / 2.0,
+                settings.win_board_dimensions[0],
+                settings.win_board_dimensions[1],
             ];
 
             board_rect[0] += (settings.win_box_rect[2] / 2.0) - (board_rect[2] / 2.0);
@@ -391,15 +401,15 @@ impl NonogramView {
                 for row in 0..settings.cell_dimensions[1] {
                     let value = controller.nonogram.get([col, row]);
                     let pos = [
-                        col as f64 * settings.cell_size,
-                        row as f64 * settings.cell_size,
+                        col as f64 * settings.win_cell_size,
+                        row as f64 * settings.win_cell_size,
                     ];
                     if value == 1 {
                         let cell_rect = [
-                            board_rect[0] + (pos[0] / 2.0),
-                            board_rect[1] + (pos[1] / 2.0),
-                            settings.cell_size / 2.0,
-                            settings.cell_size / 2.0,
+                            board_rect[0] + pos[0],
+                            board_rect[1] + pos[1],
+                            settings.win_cell_size,
+                            settings.win_cell_size,
                         ];
                         Rectangle::new(settings.filled_cell_background_color).draw(
                             cell_rect,
