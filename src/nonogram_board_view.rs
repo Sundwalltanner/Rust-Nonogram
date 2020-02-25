@@ -11,20 +11,34 @@ use crate::NonogramController;
 #[derive(Default)]
 /// Stores nonogram view settings.
 pub struct NonogramViewSettings {
+    /// X and Y coordinates of nonogram board relative to top left corner of the window.
     pub position: [f64; 2],
+    /// Overall size value of nonogram board. This ends up being used in an equation which determines
+    /// the width and height of the board based on how many rows and columns it has.
     pub size: f64,
+    /// [width, height] of nonogram board.
     pub board_dimensions: [f64; 2],
+    /// [columns, rows] in nonogram board.
     pub cell_dimensions: [usize; 2],
+    /// Both the width and height of a single square in the nonogram board.
     pub cell_size: f64,
+    /// [width, height] of nonogram board when displayed during win screen.
     pub win_board_dimensions: [f64; 2],
+    /// Both the width and height of a single square in the nonogram board displayed during win screen.
     pub win_cell_size: f64,
+    /// Nonogram board color. Determines color of unfilled square in nonogram board.
     pub background_color: Color,
-    pub border_color: Color,
+    /// Color of overall nonogram board edge.
     pub board_edge_color: Color,
+    /// Color of edges separating every 5 squares in nonogram board.
     pub section_edge_color: Color,
+    /// Color of individual nonogram board square edge.
     pub cell_edge_color: Color,
+    /// Thickness of nonogram board edge.
     pub board_edge_radius: f64,
+    /// Thickness of edges separating every 5 squares in nonogram board.
     pub section_edge_radius: f64,
+    /// Thickness of edges of each individual board square.
     pub cell_edge_radius: f64,
     pub selected_cell_border_color: Color,
     pub selected_cell_border_round_radius: f64,
@@ -33,6 +47,7 @@ pub struct NonogramViewSettings {
     pub marked_cell_background_color: Color,
     pub text_color: Color,
     pub dimensions_dropdown_menu_box: [f64; 4],
+    pub dimensions_dropdown_menu_select_background: [f64; 4],
     pub win_box_rect: [f64; 4],
     pub restart_box: [f64; 4],
     pub new_game_box: [f64; 4],
@@ -51,7 +66,6 @@ impl NonogramViewSettings {
             win_board_dimensions: [0.0, 240.0],
             win_cell_size: 0.0,
             background_color: hex("f7f5f6"),
-            border_color: hex("cccccc"),
             board_edge_color: hex("cccccc"),
             section_edge_color: hex("34af4a"),
             cell_edge_color: hex("cccccc"),
@@ -65,6 +79,7 @@ impl NonogramViewSettings {
             marked_cell_background_color: hex("f77b00"),
             text_color: hex("ffffff"),
             dimensions_dropdown_menu_box: [300.0, 10.0, 100.0, 30.0],
+            dimensions_dropdown_menu_select_background: [0.0; 4],
             win_box_rect: [600.0, 500.0, 250.0, 200.0],
             restart_box: [450.0, 10.0, 100.0, 30.0],
             new_game_box: [450.0, 10.0, 100.0, 30.0],
@@ -83,12 +98,6 @@ impl NonogramViewSettings {
         self.board_dimensions[1] = (rows / (cols + rows)) * self.size;
         self.cell_size = self.board_dimensions[0] / cols;
 
-        // The board size when it's displayed during the end game screen needs to be a certain height in order to not end up
-        // overlapping the stats box. Everything else from the width of the board to the size of the cells needs to be based around
-        // this maximum height.
-        self.win_cell_size = self.win_board_dimensions[1] / rows;
-        self.win_board_dimensions[0] = self.win_cell_size * cols;
-
         // A random string that's displayed near an image of the final board upon winning.
         // Ends up saying something like, "That looks just like Abraham Lincoln!".
         //
@@ -100,12 +109,24 @@ impl NonogramViewSettings {
             }
         }
 
+        // The board size when it's displayed during the end game screen needs to be a certain height in order to not end up
+        // overlapping the stats box. Everything else from the width of the board to the size of the cells needs to be based around
+        // this maximum height.
+        self.win_cell_size = self.win_board_dimensions[1] / rows;
+        self.win_board_dimensions[0] = self.win_cell_size * cols;
+
+        // Win box containing stats is center-aligned.
         self.win_box_rect[0] = self.win_box_rect[0] - (self.win_box_rect[2] / 2.0);
         self.win_box_rect[1] = self.win_box_rect[1] - (self.win_box_rect[3] / 2.0);
 
+        // New game box / button at the bottom of the win box is center aligned and located at the very bottom of the win box.
         self.new_game_box[2] = self.win_box_rect[2];
         self.new_game_box[0] = self.win_box_rect[0] + (self.win_box_rect[2] / 2.0) - (self.new_game_box[2] / 2.0);
         self.new_game_box[1] = self.win_box_rect[1] + self.win_box_rect[3] - self.new_game_box[3];
+
+        // Setup dimensions dropdown menu stuff.
+        self.dimensions_dropdown_menu_select_background = self.dimensions_dropdown_menu_box;
+        self.dimensions_dropdown_menu_select_background[3] *= (DIMENSIONS_CHOICES.len() + 3) as f64;
     }
 }
 
@@ -751,9 +772,21 @@ impl NonogramView {
             }
 
             // Dropdown size selection menu.
+            let dimensions_size = 25;
+            let dimensions_pos = [settings.dimensions_dropdown_menu_box[0] + 5.0,
+                settings.dimensions_dropdown_menu_box[1]
+                + (settings.dimensions_dropdown_menu_box[3] / 2.0)
+                + ((dimensions_size as f64 * 0.75) / 2.0)];
+
             match controller.dimensions_dropdown_menu {
                 ButtonInteraction::None => {
                     Rectangle::new_round(hex("333333"), 5.0).draw(
+                        settings.dimensions_dropdown_menu_box,
+                        &c.draw_state,
+                        c.transform,
+                        g,
+                    );
+                    Rectangle::new_round_border(hex("333333"), 5.0, 2.0).draw(
                         settings.dimensions_dropdown_menu_box,
                         &c.draw_state,
                         c.transform,
@@ -767,37 +800,67 @@ impl NonogramView {
                         c.transform,
                         g,
                     );
+                    Rectangle::new_round_border(hex("2D2D2D"), 5.0, 2.0).draw(
+                        settings.dimensions_dropdown_menu_box,
+                        &c.draw_state,
+                        c.transform,
+                        g,
+                    );
                 }
                 ButtonInteraction::Select => {
-                    Rectangle::new_round(hex("5adbfd"), 5.0).draw(
+                    Rectangle::new_round(hex("333333"), 5.0).draw(
+                        settings.dimensions_dropdown_menu_select_background,
+                        &c.draw_state,
+                        c.transform,
+                        g,
+                    );
+                    Rectangle::new_round_border(hex("2D2D2D"), 5.0, 2.0).draw(
+                        settings.dimensions_dropdown_menu_select_background,
+                        &c.draw_state,
+                        c.transform,
+                        g,
+                    );
+                    Rectangle::new_round(hex("2D2D2D"), 5.0).draw(
                         settings.dimensions_dropdown_menu_box,
                         &c.draw_state,
                         c.transform,
                         g,
                     );
 
-                    for dimension in DIMENSIONS_CHOICES.iter() {
-                        Rectangle::new_round(hex("333333"), 5.0).draw(
-                            settings.dimensions_dropdown_menu_box,
-                            &c.draw_state,
-                            c.transform.trans(0.0, 30.0),
-                            g,
-                        );
+                    for dimension in 0..DIMENSIONS_CHOICES.len() {
+                        if controller.dimensions_dropdown_options.0 == dimension {
+                            match controller.dimensions_dropdown_options.1 {
+                                ButtonInteraction::None => (),
+                                ButtonInteraction::Hover => {
+                                    Rectangle::new(hex("222222")).draw(
+                                        settings.dimensions_dropdown_menu_box,
+                                        &c.draw_state,
+                                        c.transform.trans(0.0, dimensions_pos[1] * (dimension + 1) as f64),
+                                        g,
+                                    );
+                                }
+                                ButtonInteraction::Select => {
+                                    Rectangle::new(hex("333333")).draw(
+                                        settings.dimensions_dropdown_menu_box,
+                                        &c.draw_state,
+                                        c.transform.trans(0.0, dimensions_pos[1] * (dimension + 1) as f64),
+                                        g,
+                                    );
+                                }
+                            }
+                        }
                         let dimensions_str = format!(
                             "{}x{}",
-                            dimension[0], dimension[1]
+                            DIMENSIONS_CHOICES[dimension][0], DIMENSIONS_CHOICES[dimension][1]
                         );
-                        let dimensions_size = 25;
                         Text::new_color(hex("ffffff"), dimensions_size)
                             .draw(
                                 &dimensions_str,
                                 glyphs,
                                 &c.draw_state,
                                 c.transform.trans(
-                                    settings.dimensions_dropdown_menu_box[0] + 5.0,
-                                    settings.dimensions_dropdown_menu_box[1]
-                                        + (settings.dimensions_dropdown_menu_box[3] / 2.0)
-                                        + ((dimensions_size as f64 * 0.75) / 2.0),
+                                    dimensions_pos[0],
+                                    dimensions_pos[1] * (dimension + 2) as f64,
                                 ),
                                 g,
                             )
@@ -816,12 +879,7 @@ impl NonogramView {
                     &dimensions_str,
                     glyphs,
                     &c.draw_state,
-                    c.transform.trans(
-                        settings.dimensions_dropdown_menu_box[0] + 5.0,
-                        settings.dimensions_dropdown_menu_box[1]
-                            + (settings.dimensions_dropdown_menu_box[3] / 2.0)
-                            + ((dimensions_size as f64 * 0.75) / 2.0),
-                    ),
+                    c.transform.trans(dimensions_pos[0], dimensions_pos[1]),
                     g,
                 )
                 .unwrap_or_else(|_| panic!("text draw failed"));

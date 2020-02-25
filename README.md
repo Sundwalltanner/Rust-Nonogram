@@ -61,7 +61,7 @@ As seen in the win screen image above, the final image of the board is shown to 
 
 Here's a gif of me solving a basic 5x5 Nonogram from start to finish:
 
-![Gif of solving 5x5 Nonogram](http://i.imgur.com/WaEqNRR.gif)
+![Gif of solving 5x5 Nonogram](https://i.imgur.com/iVJVAHi.gif)
 
 ## Save progress
 Progress is automatically saved to a file named ```savedata.json``` in the main directory for this project whenever the program is exited. This includes pressing the ```X``` in the top right corner of the window, ```ALT+F4'ing```, killing it with task manager, etc...

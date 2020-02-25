@@ -23,8 +23,8 @@ pub struct NonogramController {
     current_action: u8,
     /// Current status of dimensions dropdown menu.
     pub dimensions_dropdown_menu: ButtonInteraction,
-    /// Current status of options within dimensions dropdown menu.
-    pub dimensions_dropdown_options: Vec<ButtonInteraction>,
+    /// Index of dropdown menu selected, and interaction type.
+    pub dimensions_dropdown_options: (usize, ButtonInteraction),
     /// Current status of restart button.
     pub restart_button: ButtonInteraction,
     /// Current status of new game button.
@@ -42,21 +42,11 @@ impl NonogramController {
             board_d: false,
             current_action: 0,
             dimensions_dropdown_menu: ButtonInteraction::None,
-            dimensions_dropdown_options: vec![],
+            dimensions_dropdown_options: (0, ButtonInteraction::None),
             restart_button: ButtonInteraction::None,
             new_game_button: ButtonInteraction::None,
         };
-        controller.init_new();
         controller
-    }
-
-    /// Initialize a new nonogram controller's attributes. Called within the new() function.
-    fn init_new(&mut self) {
-        self.dimensions_dropdown_options.clear();
-
-        for _option in DIMENSIONS_CHOICES.iter() {
-            self.dimensions_dropdown_options.push(ButtonInteraction::None);
-        }
     }
 
     /// Handles events.
@@ -163,25 +153,6 @@ impl NonogramController {
                 let x = self.cursor_pos[0] - board_pos[0];
                 let y = self.cursor_pos[1] - board_pos[1];
 
-                // Check that coordinates are inside board boundaries.
-                if x >= 0.0 && x < size[0] && y >= 0.0 && y < size[1] {
-                    // Compute the cell position.
-                    let cell_x = (x / size[0] * self.nonogram.dimensions[0] as f64) as usize;
-                    let cell_y = (y / size[1] * self.nonogram.dimensions[1] as f64) as usize;
-                    self.selected_cell = Some([cell_x, cell_y]);
-                    if self.nonogram.get([cell_x, cell_y]) == self.current_action {
-                        if self.board_d {
-                            if self.mouse_d[0] {
-                                self.nonogram.set([cell_x, cell_y], 1);
-                            } else if self.mouse_d[1] {
-                                self.nonogram.set([cell_x, cell_y], 2);
-                            }
-                        }
-                    }
-                } else {
-                    self.selected_cell = None;
-                }
-
                 // Check that coordinates are inside dimensions dropdown menu button.
                 if self.cursor_pos[0] >= dimensions_dropdown_menu_box[0]
                     && self.cursor_pos[0] <= (dimensions_dropdown_menu_box[0] + dimensions_dropdown_menu_box[2])
@@ -193,6 +164,41 @@ impl NonogramController {
                     }
                 } else if self.dimensions_dropdown_menu == ButtonInteraction::Hover {
                     self.dimensions_dropdown_menu = ButtonInteraction::None;
+                }
+
+                // Check that coordinates are inside sub menu of dimensions dropdown menu.
+                let dropdown_sub_menu_y_min = dimensions_dropdown_menu_box[1] + dimensions_dropdown_menu_box[3];
+                let dropdown_sub_menu_y_max = dropdown_sub_menu_y_min + (dimensions_dropdown_menu_box[3] * (DIMENSIONS_CHOICES.len() + 2) as f64);
+                if self.dimensions_dropdown_menu == ButtonInteraction::Select
+                    && self.cursor_pos[0] >= dimensions_dropdown_menu_box[0]
+                    && self.cursor_pos[0] <= (dimensions_dropdown_menu_box[0] + dimensions_dropdown_menu_box[2])
+                    && self.cursor_pos[1] >= dropdown_sub_menu_y_min
+                    && self.cursor_pos[1] <= dropdown_sub_menu_y_max
+                { 
+                    let dimension_sub_index = ((self.cursor_pos[1] - dropdown_sub_menu_y_min) / (dimensions_dropdown_menu_box[3] + 5.0));
+                    self.dimensions_dropdown_options = (dimension_sub_index as usize, ButtonInteraction::Hover);
+                    self.selected_cell = None;
+                } else {
+                    self.dimensions_dropdown_options = (0, ButtonInteraction::None);
+
+                    // Check that coordinates are inside board boundaries.
+                    if x >= 0.0 && x < size[0] && y >= 0.0 && y < size[1] {
+                        // Compute the cell position.
+                        let cell_x = (x / size[0] * self.nonogram.dimensions[0] as f64) as usize;
+                        let cell_y = (y / size[1] * self.nonogram.dimensions[1] as f64) as usize;
+                        self.selected_cell = Some([cell_x, cell_y]);
+                        if self.nonogram.get([cell_x, cell_y]) == self.current_action {
+                            if self.board_d {
+                                if self.mouse_d[0] {
+                                    self.nonogram.set([cell_x, cell_y], 1);
+                                } else if self.mouse_d[1] {
+                                    self.nonogram.set([cell_x, cell_y], 2);
+                                }
+                            }
+                        }
+                    } else {
+                        self.selected_cell = None;
+                    }
                 }
 
                 // Check that coordinates are inside restart game button.
@@ -223,6 +229,10 @@ impl NonogramController {
                 match self.dimensions_dropdown_menu {
                     ButtonInteraction::Select => {
                         self.dimensions_dropdown_menu = ButtonInteraction::None;
+                        if self.dimensions_dropdown_options.1 == ButtonInteraction::Hover {
+                            self.nonogram.next_dimensions = DIMENSIONS_CHOICES[self.dimensions_dropdown_options.0];
+                            self.dimensions_dropdown_options = (0, ButtonInteraction::None);
+                        }
                     }
                     ButtonInteraction::Hover => {
                         self.dimensions_dropdown_menu = ButtonInteraction::Select;
