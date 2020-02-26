@@ -1,3 +1,5 @@
+//! Responsible for drawing all graphics to the window.
+
 use graphics::character::CharacterCache;
 use graphics::color::hex;
 use graphics::types::Color;
@@ -516,59 +518,78 @@ impl NonogramView {
             // as it's only really noticeable when the numbers start hitting the double digits.
             for k in 0..settings.cell_dimensions[0] as usize {
                 let mut num_pos = 0;
-                for i in 0..controller.nonogram.nums_per[0] as usize {
-                    let hint_val = controller.nonogram.goal_nums[0][k][i];
+                if controller.nonogram.goal_nums[0][k][0] == 0 {
+                    let ch = "0".to_string();
+                    let hint_num_width = glyphs.width(hint_num_size, &ch).unwrap_or(0.0);
+                    let col_num_loc =
+                        (settings.cell_size / 2.0) - (hint_num_width as f64 / 2.0);
+                    let col_hint_x = settings.position[0] + (k as f64 * settings.cell_size) + col_num_loc;
+                    let col_hint_y = settings.position[0] - num_pos as f64 * 20.0 - 80.0;
+                    hint_reg
+                        .draw(&ch, glyphs, &c.draw_state, c.transform.trans(col_hint_x, col_hint_y), g)
+                        .unwrap_or_else(|_| panic!("text draw failed"));
+                } else {
+                    for i in (0..controller.nonogram.nums_per[0] as usize).rev() {
+                        let hint_val = controller.nonogram.goal_nums[0][k][i];
+                        // Only draw column numbers that aren't 0.
+                        if hint_val != 0 {
+                            let ch = hint_val.abs().to_string();
+                            let hint_num_width = glyphs.width(hint_num_size, &ch).unwrap_or(0.0);
+                            let col_num_loc =
+                                (settings.cell_size / 2.0) - (hint_num_width as f64 / 2.0);
+                            let col_hint_x = settings.position[0] + (k as f64 * settings.cell_size) + col_num_loc;
+                            let col_hint_y = settings.position[0] - num_pos as f64 * 20.0 - 80.0;
 
-                    // Only draw column numbers that aren't 0.
-                    if hint_val != 0 {
-                        let ch = hint_val.abs().to_string();
-                        let hint_num_width = glyphs.width(hint_num_size, &ch).unwrap_or(0.0);
-                        let col_num_loc =
-                            (settings.cell_size / 2.0) - (hint_num_width as f64 / 2.0);
-                        let ch_x = settings.position[0] + (k as f64 * settings.cell_size) + col_num_loc;
-                        let ch_y = settings.position[0] - num_pos as f64 * 20.0 - 80.0;
-
-                        // Either draw a normal number, or draw a crossout number.
-                        if hint_val > 0 {
-                            hint_reg
-                                .draw(&ch, glyphs, &c.draw_state, c.transform.trans(ch_x, ch_y), g)
-                                .unwrap_or_else(|_| panic!("text draw failed"));
-                        } else {
-                            hint_cross
-                                .draw(&ch, glyphs, &c.draw_state, c.transform.trans(ch_x, ch_y), g)
-                                .unwrap_or_else(|_| panic!("text draw failed"));
+                            // Either draw a normal number, or draw a crossout number.
+                            if hint_val > 0 {
+                                hint_reg
+                                    .draw(&ch, glyphs, &c.draw_state, c.transform.trans(col_hint_x, col_hint_y), g)
+                                    .unwrap_or_else(|_| panic!("text draw failed"));
+                            } else {
+                                hint_cross
+                                    .draw(&ch, glyphs, &c.draw_state, c.transform.trans(col_hint_x, col_hint_y), g)
+                                    .unwrap_or_else(|_| panic!("text draw failed"));
+                            }
+                            num_pos += 1;
                         }
-                        num_pos += 1;
                     }
                 }
             }
 
             // Draw row hint numbers.
             let row_num_loc = (settings.cell_size / 2.0) + ((hint_num_size as f64 * 0.75) / 2.0);
+            let mut row_hint_y = settings.position[1] + row_num_loc;
             for k in 0..settings.cell_dimensions[1] as usize {
                 let mut num_pos = 0;
-                for i in 0..controller.nonogram.nums_per[1] as usize {
-                    let hint_val = controller.nonogram.goal_nums[1][k][i];
+                if controller.nonogram.goal_nums[1][k][0] == 0 {
+                    let row_hint_x = settings.position[0] - num_pos as f64 * 20.0 - 25.0;
+                    hint_reg
+                        .draw(&"0", glyphs, &c.draw_state, c.transform.trans(row_hint_x, row_hint_y), g)
+                        .unwrap_or_else(|_| panic!("text draw failed"));
+                } else {
+                    for i in (0..controller.nonogram.nums_per[1] as usize).rev() {
+                        let hint_val = controller.nonogram.goal_nums[1][k][i];
 
-                    // Only draw row numbers that aren't 0.
-                    if hint_val != 0 {
-                        let ch = hint_val.abs().to_string();
-                        let ch_x = settings.position[0] - num_pos as f64 * 20.0 - 25.0;
-                        let ch_y = settings.position[1] + (k as f64 * settings.cell_size) + row_num_loc;
+                        // Only draw row numbers that aren't 0.
+                        if hint_val != 0 {
+                            let ch = hint_val.abs().to_string();
+                            let row_hint_x = settings.position[0] - num_pos as f64 * 20.0 - 25.0;
 
-                        // Either draw a normal number, or draw a crossout number.
-                        if hint_val > 0 {
-                            hint_reg
-                                .draw(&ch, glyphs, &c.draw_state, c.transform.trans(ch_x, ch_y), g)
-                                .unwrap_or_else(|_| panic!("text draw failed"));
-                        } else {
-                            hint_cross
-                                .draw(&ch, glyphs, &c.draw_state, c.transform.trans(ch_x, ch_y), g)
-                                .unwrap_or_else(|_| panic!("text draw failed"));
+                            // Either draw a normal number, or draw a crossout number.
+                            if hint_val > 0 {
+                                hint_reg
+                                    .draw(&ch, glyphs, &c.draw_state, c.transform.trans(row_hint_x, row_hint_y), g)
+                                    .unwrap_or_else(|_| panic!("text draw failed"));
+                            } else {
+                                hint_cross
+                                    .draw(&ch, glyphs, &c.draw_state, c.transform.trans(row_hint_x, row_hint_y), g)
+                                    .unwrap_or_else(|_| panic!("text draw failed"));
+                            }
+                            num_pos += 1;
                         }
-                        num_pos += 1;
                     }
                 }
+                row_hint_y += settings.cell_size;
             }
 
             // Draw cell borders.

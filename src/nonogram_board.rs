@@ -1,8 +1,11 @@
+//! Responsible for everything that isn't input or graphics.
+
 use std::time::{Duration, Instant};
 use rand::distributions::{Bernoulli, Distribution};
 use std::fs;
 use serde::{Deserialize, Serialize};
 
+/// Contains the information we're going to save in between each session.
 #[derive(Serialize, Deserialize)]
 pub struct SavedBoard {
     pub dimensions: [usize; 2],
@@ -15,25 +18,76 @@ pub struct SavedBoard {
     pub end_game_screen: bool,
 }
 
-//#[derive(Debug, Clone, Copy, PartialEq)]
+/// Contains all logic pertaining to the nonogram board.
 pub struct NonogramBoard {
+    /// Current nonogram board columns and rows.
     pub dimensions: [usize; 2],
+
+    /// Next nonogram board columns and rows.
     pub next_dimensions: [usize; 2],
+
+    /// Contains all cell data of the current nonogram board.
+    /// 
+    /// A cell can be empty(0), filled(1), or marked(2).
     pub data: Vec<Vec<u8>>,
+
+    /// The maximum hint numbers for the columns and rows depending on the board dimensions.
+    /// 
+    /// This is equal to the number of cells in that column or row divided by 2 and rounded up.
+    /// 
+    /// Example: The maximum hint numbers in a column of 5 cells is 3.
+    /// 
+    /// This is calculated on initialization like this:
+    /// ```
+    /// self.nums_per[0] = (self.dimensions[1] as f64 / 2.0_f64).round() as u64;
+    /// self.nums_per[1] = (self.dimensions[0] as f64 / 2.0_f64).round() as u64;
+    /// ```
     pub nums_per: [u64; 2],
+
+    /// The goal hint numbers. If a value is negative, it's crossed out.
+    /// ```
+    /// goal_nums[column_or_row][which_column_or_row][which_number];
+    /// goal_nums[0][1][2] => Third hint number in second column
+    /// goal_nums[1][2][3] => Fourth hint number in third row
+    /// ```
     pub goal_nums: Vec<Vec<Vec<i8>>>,
+
+    /// The current hint numbers.
+    /// 
+    /// Because we don't generate unique goal states, this is what we compare with the goal_nums in order
+    /// to determine whether or not we've reached a valid goal state.
     pub current_nums: Vec<Vec<Vec<i8>>>,
+
+    /// Time that the current game started at.
     pub game_start: Option<Instant>,
+
+    /// Unused at the moment.
     pub last_time: Option<Instant>,
+
+    /// Time that the most recent game ended at.
     pub game_end: Option<Instant>,
+
+    /// True if we're at the end game screen.
+    /// False if we're not at the end game screen.
     pub end_game_screen: bool,
+
+    /// The amount of time (in seconds) that's passed since the current game has started.
     pub duration: Duration,
+
+    /// Whether or not we want to restart the board. This is checked in the main waiting loop.
     pub reset_board: bool,
+
+    /// How many cells the player has filled in.
     pub count_black: u64,
+
+    /// How many filled in cells the goal state has.
     pub goal_black: u64,
+
+    /// The ratio between the number of filled in cells in the goal state and the total number of cells on the board.
     pub init_ratio: f64,
 }
 
+/// NonogramBoard functionality.
 impl NonogramBoard {
     pub fn new(next_dimensions: [usize; 2], reset_board: bool) -> NonogramBoard {
         let mut board = NonogramBoard {
@@ -57,6 +111,8 @@ impl NonogramBoard {
         board
     }
 
+    /// Initialize values that cannot be initialized in the constructor.
+    /// This function is called within the constructor.
     fn init_new(&mut self) {
         self.data.clear();
         self.goal_nums.clear();
@@ -64,6 +120,7 @@ impl NonogramBoard {
 
         let save_data = fs::read_to_string("savedata.json").unwrap_or("".to_string());
 
+        // If there is no save data file or if we're generating a brand-new board.
         if save_data.is_empty() || self.reset_board {
             for _col in 0..self.dimensions[0] {
                 self.data.push(vec![0; self.dimensions[1]]);
@@ -96,20 +153,12 @@ impl NonogramBoard {
         }
     }
 
+    /// Compare the goal state to the current state of the hint numbers. Return true if the player
+    /// has won. Return false if the player hasn't won.
     pub fn check_win(&self) -> bool {
-        // Check column nums.
-        for k in 0..self.dimensions[0] {
-            for i in 0..self.nums_per[0] as usize {
-                if self.goal_nums[0][k][i].abs() != self.current_nums[0][k][i] {
-                    return false;
-                }
-            }
-        }
-
-        // Check row nums.
-        for k in 0..self.dimensions[1] {
-            for i in 0..self.nums_per[1] as usize {
-                if self.goal_nums[1][k][i].abs() != self.current_nums[1][k][i] {
+        for i in 0..2 {
+            for k in 0..self.dimensions[i] {
+                if !self.goal_nums[i][k].iter().zip(self.current_nums[i][k].iter()).all(|(a,b)| a.abs() == b.abs()) {
                     return false;
                 }
             }
@@ -176,7 +225,7 @@ impl NonogramBoard {
 
         // Get column nums.
         for col in 0..self.dimensions[0] {
-            let mut num_hint = (self.nums_per[0] - 1) as usize;
+            let mut num_hint = 0;
             let mut filling = false;
             for row in 0..self.dimensions[1] {
                 if self.data[col][row] == 1 {
@@ -187,9 +236,7 @@ impl NonogramBoard {
                 } else {
                     if filling {
                         filling = false;
-                        if num_hint != 0 {
-                            num_hint -= 1;
-                        }
+                        num_hint += 1;
                     }
                 }
             }
@@ -197,7 +244,7 @@ impl NonogramBoard {
 
         // Get row nums.
         for row in 0..self.dimensions[1] {
-            let mut num_hint = (self.nums_per[1] - 1) as usize;
+            let mut num_hint = 0;
             let mut filling = false;
             for col in 0..self.dimensions[0] {
                 if self.data[col][row] == 1 {
@@ -208,9 +255,7 @@ impl NonogramBoard {
                 } else {
                     if filling {
                         filling = false;
-                        if num_hint != 0 {
-                            num_hint -= 1;
-                        }
+                        num_hint += 1;
                     }
                 }
             }
@@ -218,11 +263,17 @@ impl NonogramBoard {
         nums
     }
 
+    /// Hint numbers are stored as signed integers, which means that we utilize the negative values in order to
+    /// declare some of the hint numbers as crossed out in order to assist the player.
+    /// 
+    /// For example, if the hint numbers in a row are [1, 3, 1, 2] and the player fills in a single square, in
+    /// the background, that first 1 will actually be -1. It will be displayed to the user as 1 still, but it will
+    /// have a different color to it in order to inform the user that it's crossed out.
     pub fn update_crossouts(&mut self) {
         // Check column nums.
         for k in 0..self.dimensions[0] {
             let mut match_count = false;
-            let mut current_it = self.nums_per[0] as usize;
+            let mut current_it = 0usize;
             let mut goal_it = current_it;
             let mut match_it = current_it;
 
@@ -232,34 +283,34 @@ impl NonogramBoard {
             {
                 match_count = true;
             }
-            while goal_it > 0 {
-                if self.goal_nums[0][k][goal_it - 1] != 0 {
-                    while current_it > 0 {
-                        if self.goal_nums[0][k][goal_it - 1].abs()
-                            == self.current_nums[0][k][current_it - 1]
+            while goal_it < self.nums_per[0] as usize {
+                if self.goal_nums[0][k][goal_it] != 0 {
+                    while current_it < self.nums_per[0] as usize {
+                        if self.goal_nums[0][k][goal_it].abs()
+                            == self.current_nums[0][k][current_it]
                             && match_count
                         {
-                            if self.goal_nums[0][k][goal_it - 1] > 0 {
-                                self.goal_nums[0][k][goal_it - 1] *= -1;
+                            if self.goal_nums[0][k][goal_it] > 0 {
+                                self.goal_nums[0][k][goal_it] *= -1;
                             }
-                            match_it = current_it - 1;
+                            match_it = current_it + 1;
                             break;
                         } else {
-                            self.goal_nums[0][k][goal_it - 1] =
-                                self.goal_nums[0][k][goal_it - 1].abs();
+                            self.goal_nums[0][k][goal_it] =
+                                self.goal_nums[0][k][goal_it].abs();
                         }
-                        current_it -= 1;
+                        current_it += 1;
                     }
                 }
                 current_it = match_it;
-                goal_it -= 1;
+                goal_it += 1;
             }
         }
 
         // Check row nums.
         for k in 0..self.dimensions[1] {
             let mut match_count = false;
-            let mut current_it = self.nums_per[1] as usize;
+            let mut current_it = 0usize;
             let mut goal_it = current_it;
             let mut match_it = current_it;
 
@@ -269,27 +320,27 @@ impl NonogramBoard {
             {
                 match_count = true;
             }
-            while goal_it > 0 {
-                if self.goal_nums[1][k][goal_it - 1] != 0 {
-                    while current_it > 0 {
-                        if self.goal_nums[1][k][goal_it - 1].abs()
-                            == self.current_nums[1][k][current_it - 1]
+            while goal_it < self.nums_per[1] as usize {
+                if self.goal_nums[1][k][goal_it] != 0 {
+                    while current_it < self.nums_per[1] as usize{
+                        if self.goal_nums[1][k][goal_it].abs()
+                            == self.current_nums[1][k][current_it]
                             && match_count
                         {
-                            if self.goal_nums[1][k][goal_it - 1] > 0 {
-                                self.goal_nums[1][k][goal_it - 1] *= -1;
+                            if self.goal_nums[1][k][goal_it] > 0 {
+                                self.goal_nums[1][k][goal_it] *= -1;
                             }
-                            match_it = current_it - 1;
+                            match_it = current_it + 1;
                             break;
                         } else {
-                            self.goal_nums[1][k][goal_it - 1] =
-                                self.goal_nums[1][k][goal_it - 1].abs();
+                            self.goal_nums[1][k][goal_it] =
+                                self.goal_nums[1][k][goal_it].abs();
                         }
-                        current_it -= 1;
+                        current_it += 1;
                     }
                 }
                 current_it = match_it;
-                goal_it -= 1;
+                goal_it += 1;
             }
         }
     }

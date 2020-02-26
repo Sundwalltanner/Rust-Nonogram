@@ -1,3 +1,5 @@
+//! Responsible for dealing with all input.
+
 use piston::input::GenericEvent;
 use serde_json::json;
 use std::error::Error;

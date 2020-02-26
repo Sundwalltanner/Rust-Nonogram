@@ -18,6 +18,8 @@ mod nonogram_controller;
 
 use crate::common::{INITIAL_WINDOW_SIZE, INITIAL_BOARD_DIMENSIONS};
 
+/// Does everything necessary to run the game. Creates the initial classes, window, and sits in a
+/// while loop that's constantly redrawing the contents of the window and checking for events.
 fn main() {
     let opengl = OpenGL::V3_2;
     let settings = WindowSettings::new("Nonogram", INITIAL_WINDOW_SIZE)
