@@ -235,7 +235,7 @@ impl NonogramBoard {
     /// Change the currently selected cell.
     ///
     /// Used for keyboard controls. Called by `nonogram_controller`.
-    pub fn change_selected(&mut self, direction: Directions) {
+    pub fn change_selected(&mut self, direction: Directions, loop_back: bool) {
         let mut cell = match self.selected_cell {
             Some(a) => a,
             None => [0; 2],
@@ -244,21 +244,29 @@ impl NonogramBoard {
             Directions::Up => {
                 if cell[1] > 0 {
                     cell[1] -= 1;
+                } else if loop_back {
+                    cell[1] = self.dimensions[1] - 1;
                 }
             }
             Directions::Down => {
                 if cell[1] < self.dimensions[1] - 1 {
                     cell[1] += 1;
+                } else if loop_back {
+                    cell[1] = 0;
                 }
             }
             Directions::Left => {
                 if cell[0] > 0 {
                     cell[0] -= 1;
+                } else if loop_back {
+                    cell[0] = self.dimensions[0] - 1;
                 }
             }
             Directions::Right => {
                 if cell[0] < self.dimensions[0] - 1 {
                     cell[0] += 1;
+                } else if loop_back {
+                    cell[0] = 0;
                 }
             }
         }
