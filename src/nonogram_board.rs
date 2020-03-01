@@ -5,6 +5,8 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::time::{Duration, Instant};
 
+use crate::common::{Directions};
+
 /// Contains the information we're going to save in between each session.
 #[derive(Serialize, Deserialize)]
 pub struct SavedBoard {
@@ -85,6 +87,9 @@ pub struct NonogramBoard {
 
     /// The ratio between the number of filled in cells in the goal state and the total number of cells on the board.
     pub init_ratio: f64,
+
+    /// Selected cell.
+    pub selected_cell: Option<[usize; 2]>,
 }
 
 /// NonogramBoard functionality.
@@ -106,6 +111,7 @@ impl NonogramBoard {
             count_black: 0,
             goal_black: 0,
             init_ratio: 0.5,
+            selected_cell: None,
         };
         board.init_new();
         board
@@ -224,6 +230,40 @@ impl NonogramBoard {
                 self.data[col][row] = 0;
             }
         }
+    }
+
+    /// Change the currently selected cell.
+    /// 
+    /// Used for keyboard controls. Called by `nonogram_controller`.
+    pub fn change_selected(&mut self, direction: Directions) {
+        let mut cell = match self.selected_cell {
+            Some(a) => a,
+            None => [0; 2],
+        };
+        match direction {
+            Directions::Up => {
+                if cell[1] > 0 {
+                    cell[1] -= 1;
+                }
+            }
+            Directions::Down => {
+                if cell[1] < self.dimensions[1] - 1 {
+                    cell[1] += 1;
+                }
+            }
+            Directions::Left => {
+                if cell[0] > 0 {
+                    cell[0] -= 1;
+                }
+            }
+            Directions::Right => {
+                if cell[0] < self.dimensions[0] - 1 {
+                    cell[0] += 1;
+                }
+            }
+        }
+
+        self.selected_cell = Some(cell);
     }
 
     /// Find the current black box groupings in order to find correct values

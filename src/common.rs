@@ -27,6 +27,14 @@ pub enum ButtonInteraction {
     Select,
 }
 
+/// Directions. Used for keyboard controls. Self explanatory.
+pub enum Directions {
+    Up,
+    Down,
+    Left,
+    Right,
+}
+
 /// Determines the columns and rows in a fresh run of the program.
 /// If any save data exists, it will overwrite these values with the most recently used dimensions.
 pub const INITIAL_BOARD_DIMENSIONS: [usize; 2] = [5, 5];

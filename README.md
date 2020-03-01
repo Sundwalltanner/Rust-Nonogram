@@ -5,7 +5,7 @@ First and foremost, this is being developed and tested in Windows. If it doesn't
 
 Nonograms, sometimes referred to as Picross, are a type of picture-based numbers puzzle. Basically, you're given a grid with some numbers to the side of each row and column and you have to use that information to determine which boxes in the grid are filled in. Typically the end result is that the filled in blocks form the shape of something. That end result can be in black and white or in color based on the ruleset. [Look, here's a Wikipedia page about nonograms](https://en.wikipedia.org/wiki/Nonogram).
 
-## Why?+
+## Why?
 A video game developer named Jupiter has made like 100 different Picross games, most of which are exclusive to the Nintendo 3DS. I got addicted to [Picross S3](https://www.nintendo.com/games/detail/picross-s3-switch/) for the Nintendo Switch this term, so I wanted to try and make that in Rust.
 
 ## How to install
@@ -23,18 +23,23 @@ This will install the packages located in the ```Cargo.toml``` file, create an e
 Once you've done all that, you're ready to learn how to play.
 
 ## Controls
-The controls are really basic:
-* ```Left Mouse Click``` - Fill box if clear. Clear box if not clear.
+The mouse are really basic:
+* ```Left Mouse Click``` - Fill box if clear. Clear box if not clear. Interact with buttons.
 * ```Right Mouse Click``` - Mark box if clear. Clear box if not clear.
+
+These two mouse buttons can also be held down in order to fill/clear multiple boxes. They will maintain the same command that was executed on the first box for convenience. This means that if you press the left mouse button and your cursor is hovering over a cleared box, as long as you keep that left mouse button held down, any other cleared box your cursor hovers over will be filled. Anything besides cleared boxes won't be altered.
+
+This also means that commands are executed on mouse button down rather than on mouse button release.
+
+There's also optional keyboard controls:
+* ```WASD``` - Move to a different box on the board.
+* ```E``` - Fill box if clear. Clear box if not clear.
+* ```Q``` - Mark box if clear. Clear box if not clear.
 * ```"R" Key``` - Restart. Generates a new game board. If the board dimensions have been altered, the new board will have those dimensions.
 * ```"Up Arrow" Key``` - Increase board dimensions. Press ```"R" Key``` to generate a new board with these dimensions.
 * ```"Down Arrow" Key``` - Decrease board dimensions. Press ```"R" Key``` to generate a new board with these dimensions.
 
 Marking boxes is simply for player convenience. Marked boxes are supposed to indicate which boxes you believe are definitely clear in the solution. You can reach the win condition without marking a single box as long as you have the correct boxes filled.
-
-These two mouse buttons can also be held down in order to fill/clear multiple boxes. They will maintain the same command that was executed on the first box for convenience. This means that if you press the left mouse button and your cursor is hovering over a cleared box, as long as you keep that left mouse button held down, any other cleared box your cursor hovers over will be filled. Anything besides cleared boxes won't be altered.
-
-This also means that commands are executed on mouse button down rather than on mouse button release.
 
 This probably sounds confusing, and I'm sorry. It makes more sense when you play it. I borrowed this control setup from the Picross games on the Nintendo Switch, because they're my favorite version of this puzzle. There are numerous versions of this online, but so far I haven't really found one that I like nearly as much as the Nintendo Switch games.
 

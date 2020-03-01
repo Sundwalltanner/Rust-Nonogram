@@ -906,7 +906,7 @@ impl NonogramView {
                 .unwrap_or_else(|_| panic!("text draw failed"));
 
             // Draw selected cell border.
-            if let Some(ind) = controller.selected_cell {
+            if let Some(ind) = controller.nonogram.selected_cell {
                 let pos = [
                     ind[0] as f64 * settings.cell_size,
                     ind[1] as f64 * settings.cell_size,

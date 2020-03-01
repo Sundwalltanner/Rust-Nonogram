@@ -6,16 +6,13 @@ use std::error::Error;
 use std::fs::File;
 use std::path::Path;
 
-use crate::common::{ButtonInteraction, DIMENSIONS_CHOICES};
+use crate::common::{ButtonInteraction, Directions, DIMENSIONS_CHOICES};
 use crate::nonogram_board::NonogramBoard;
 
 /// Handles events for nonogram game.
 pub struct NonogramController {
     /// Stores the nonogram state.
     pub nonogram: NonogramBoard,
-
-    /// Selected cell.
-    pub selected_cell: Option<[usize; 2]>,
 
     /// Stores last mouse cursor position.
     cursor_pos: [f64; 2],
@@ -47,7 +44,6 @@ impl NonogramController {
     pub fn new(nonogram: NonogramBoard) -> NonogramController {
         NonogramController {
             nonogram,
-            selected_cell: None,
             cursor_pos: [0.0; 2],
             mouse_d: [false; 2],
             board_d: false,
@@ -198,7 +194,7 @@ impl NonogramController {
                         / (dimensions_dropdown_menu_box[3] + 5.0);
                     self.dimensions_dropdown_options =
                         (dimension_sub_index as usize, ButtonInteraction::Hover);
-                    self.selected_cell = None;
+                    self.nonogram.selected_cell = None;
                 } else {
                     self.dimensions_dropdown_options = (0, ButtonInteraction::None);
 
@@ -207,7 +203,7 @@ impl NonogramController {
                         // Compute the cell position.
                         let cell_x = (x / size[0] * self.nonogram.dimensions[0] as f64) as usize;
                         let cell_y = (y / size[1] * self.nonogram.dimensions[1] as f64) as usize;
-                        self.selected_cell = Some([cell_x, cell_y]);
+                        self.nonogram.selected_cell = Some([cell_x, cell_y]);
                         if self.nonogram.get([cell_x, cell_y]) == self.current_action
                             && self.board_d
                         {
@@ -217,8 +213,6 @@ impl NonogramController {
                                 self.nonogram.set([cell_x, cell_y], 2);
                             }
                         }
-                    } else {
-                        self.selected_cell = None;
                     }
                 }
 
@@ -242,7 +236,7 @@ impl NonogramController {
             if let Some(Button::Mouse(MouseButton::Left)) = e.press_args() {
                 self.mouse_d[0] = true;
 
-                if let Some(ind) = self.selected_cell {
+                if let Some(ind) = self.nonogram.selected_cell {
                     self.board_d = true;
                     self.current_action = self.nonogram.get(ind);
                 }
@@ -277,7 +271,7 @@ impl NonogramController {
             if let Some(Button::Mouse(MouseButton::Right)) = e.press_args() {
                 self.mouse_d[1] = true;
 
-                if let Some(ind) = self.selected_cell {
+                if let Some(ind) = self.nonogram.selected_cell {
                     self.board_d = true;
                     self.current_action = self.nonogram.get(ind);
                 }
@@ -332,6 +326,40 @@ impl NonogramController {
                     .unwrap();
                 if dimensions_index > 0 {
                     self.nonogram.next_dimensions = DIMENSIONS_CHOICES[dimensions_index - 1];
+                }
+            }
+
+            // Check if "W" key has been pressed.
+            if let Some(Button::Keyboard(Key::W)) = e.press_args() {
+                self.nonogram.change_selected(Directions::Up);
+            }
+
+            // Check if "S" key has been pressed.
+            if let Some(Button::Keyboard(Key::S)) = e.press_args() {
+                self.nonogram.change_selected(Directions::Down);
+            }
+
+            // Check if "A" key has been pressed.
+            if let Some(Button::Keyboard(Key::A)) = e.press_args() {
+                self.nonogram.change_selected(Directions::Left);
+            }
+
+            // Check if "D" key has been pressed.
+            if let Some(Button::Keyboard(Key::D)) = e.press_args() {
+                self.nonogram.change_selected(Directions::Right);
+            }
+
+            // Check if "E" key has been released.
+            if let Some(Button::Keyboard(Key::E)) = e.release_args() {
+                if let Some(ind) = self.nonogram.selected_cell {
+                    self.nonogram.set(ind, 1);
+                }
+            }
+
+            // Check if "Q" key has been released.
+            if let Some(Button::Keyboard(Key::Q)) = e.release_args() {
+                if let Some(ind) = self.nonogram.selected_cell {
+                    self.nonogram.set(ind, 2);
                 }
             }
         }
