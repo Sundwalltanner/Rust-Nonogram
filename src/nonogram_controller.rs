@@ -302,11 +302,6 @@ impl NonogramController {
                 println!("Escape key pressed");
             }
 
-            // Check if "r" key has been released.
-            if let Some(Button::Keyboard(Key::R)) = e.release_args() {
-                self.nonogram.reset_board = true;
-            }
-
             // Check if "Up" key has been released.
             if let Some(Button::Keyboard(Key::Up)) = e.release_args() {
                 let dimensions_index = DIMENSIONS_CHOICES
@@ -403,6 +398,11 @@ impl NonogramController {
             }
 
             println!("Nonogram game closed. Progress has been successfully saved.");
+        }
+
+        // Check if "R" key has been released.
+        if let Some(Button::Keyboard(Key::R)) = e.release_args() {
+            self.nonogram.reset_board = true;
         }
     }
 }
