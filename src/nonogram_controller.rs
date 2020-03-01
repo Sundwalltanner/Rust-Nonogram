@@ -336,64 +336,43 @@ impl NonogramController {
             if let Some(Button::Keyboard(Key::W)) = e.press_args() {
                 self.nonogram
                     .change_selected(Directions::Up, self.loop_back);
-                self.loop_back = false;
-                if let Some(ind) = self.nonogram.selected_cell {
-                    if self.nonogram.get(ind) == self.current_action {
-                        if self.key_d[0] {
-                            self.nonogram.set(ind, 1);
-                        } else if self.key_d[1] {
-                            self.nonogram.set(ind, 2);
-                        }
-                    }
-                }
             }
 
             // Check if "S" key has been pressed.
             if let Some(Button::Keyboard(Key::S)) = e.press_args() {
                 self.nonogram
                     .change_selected(Directions::Down, self.loop_back);
-                self.loop_back = false;
-                if let Some(ind) = self.nonogram.selected_cell {
-                    if self.nonogram.get(ind) == self.current_action {
-                        if self.key_d[0] {
-                            self.nonogram.set(ind, 1);
-                        } else if self.key_d[1] {
-                            self.nonogram.set(ind, 2);
-                        }
-                    }
-                }
             }
 
             // Check if "A" key has been pressed.
             if let Some(Button::Keyboard(Key::A)) = e.press_args() {
                 self.nonogram
                     .change_selected(Directions::Left, self.loop_back);
-                self.loop_back = false;
-                if let Some(ind) = self.nonogram.selected_cell {
-                    if self.nonogram.get(ind) == self.current_action {
-                        if self.key_d[0] {
-                            self.nonogram.set(ind, 1);
-                        } else if self.key_d[1] {
-                            self.nonogram.set(ind, 2);
-                        }
-                    }
-                }
             }
 
             // Check if "D" key has been pressed.
             if let Some(Button::Keyboard(Key::D)) = e.press_args() {
                 self.nonogram
                     .change_selected(Directions::Right, self.loop_back);
-                self.loop_back = false;
-                if let Some(ind) = self.nonogram.selected_cell {
-                    if self.nonogram.get(ind) == self.current_action {
-                        if self.key_d[0] {
-                            self.nonogram.set(ind, 1);
-                        } else if self.key_d[1] {
-                            self.nonogram.set(ind, 2);
+            }
+
+            match e.press_args() {
+                Some(Button::Keyboard(Key::W))
+                | Some(Button::Keyboard(Key::A))
+                | Some(Button::Keyboard(Key::S))
+                | Some(Button::Keyboard(Key::D)) => {
+                    self.loop_back = false;
+                    if let Some(ind) = self.nonogram.selected_cell {
+                        if self.nonogram.get(ind) == self.current_action {
+                            if self.key_d[0] {
+                                self.nonogram.set(ind, 1);
+                            } else if self.key_d[1] {
+                                self.nonogram.set(ind, 2);
+                            }
                         }
                     }
                 }
+                _ => (),
             }
 
             // Check if "J" key has been pressed.
