@@ -151,6 +151,11 @@ impl NonogramBoard {
             self.nums_per[1] = (self.dimensions[0] as f64 / 2.0_f64).round() as u64;
             self.game_start = Some(Instant::now() - self.duration);
             self.end_game_screen = v.end_game_screen;
+            for i in 0..2 {
+                self.current_nums
+                    .push(vec![vec![0; self.nums_per[i] as usize]; self.dimensions[i]]);
+            }
+            self.current_nums = self.get_nums();
         }
     }
 

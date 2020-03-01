@@ -41,11 +41,11 @@ This probably sounds confusing, and I'm sorry. It makes more sense when you play
 ## How to play
 There are numbers near each column and row of the board. These numbers indicate sequences of filled in blocks. For example, take a look at the image below:
 
-![Example image of 5x5 solution](https://i.imgur.com/cWicS82.png)
+![Example image of 5x5 solution](https://i.imgur.com/YRhhWxf.png)
 
-This is the final solution to this particular Nonogram. From glancing at this, we can see that sequences of filled in boxes maintain the same order given by the order of the numbers nearby. We can also see that sequences of filled in boxes need at least one white box of separation.
+This is the final solution to this particular Nonogram. From glancing at this, we can see that sequences of filled in boxes maintain the same order given by the order of the numbers nearby. We can also see that sequences of filled in boxes need at least one white box of separation. In order to assist you in remembering which boxes cannot be filled in, you can ```right click``` a box in order to mark it with an orange-ish X (cross). You don't need to mark any boxes in order to win. They're just there to help you.
 
-The win condition is based entirely on which boxes you've filled in. Every time you fill or clear a box, the game checks to see if your board state matches that of the winning board. This takes into account the fact that some boards might not have a unique solution. This also means that boxes don't need to be marked in order to win. Marking boxes is simply for player convenience and nothing else.
+The win condition is based entirely on which boxes you've filled in. Every time you fill or clear a box, the game checks to see if your board state matches that of the winning board. This takes into account the fact that some boards might not have a unique solution.
 
 The progress tracker doesn't indicate correctness. You can fill an incorrect box, and it will still add that box to your progress.
 
@@ -69,21 +69,6 @@ Progress is automatically saved to a file named ```savedata.json``` in the main 
 Eventually this will keep track of wins or something, but for now, it just keeps track of current progress.
 
 Currently, if I make any updates to what is tracked within savedata.json, if you have an older version of that file, the program will crash and inform you that you need to delete your savedata.json file. I'll try and figure out a way to get around this, but for now, that's just the way it is.
-
-## Early Access
-This is currently in development. In the meantime, here's a gif of it running:
-
-![Gif of program running #1](https://i.imgur.com/WxbXy5q.gif)
-
-And here's an image of what it currently looks like when you start it, proving that it's generating the numbers for the columns and rows based on the randomly generated solution:
-
-![Image of program running #2](https://i.imgur.com/DjNZi3A.png)
-
-Now that I've redone the data structures holding the board and its cells together, I can resize it by altering the ```dimensions``` variable in [nonogram_board.rs](https://github.com/Sundwalltanner/Rust-Nonogram/blob/master/src/nonogram_board.rs). Ultimately, I want this to be capable of being modified by the user using a drop down menu or something. And they'll hopefully be capable of generating a new board as well with a big "generate" button or something.
-
-Anyways, here's a picture of a solved 30x30 nonogram. It didn't take me 13 seconds to solve. I just didn't have it wiped after it generated a random goal state.
-
-![Image of program running #3](https://i.imgur.com/iIO3wDv.png)
 
 ## What are you still working on?
 This isn't due for a few more weeks, so I've probably got plenty of time to hit these stretch goals:
