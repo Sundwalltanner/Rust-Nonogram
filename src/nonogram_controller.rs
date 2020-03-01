@@ -6,37 +6,46 @@ use std::error::Error;
 use std::fs::File;
 use std::path::Path;
 
-use crate::common::{DIMENSIONS_CHOICES, ButtonInteraction};
+use crate::common::{ButtonInteraction, DIMENSIONS_CHOICES};
 use crate::nonogram_board::NonogramBoard;
 
 /// Handles events for nonogram game.
 pub struct NonogramController {
     /// Stores the nonogram state.
     pub nonogram: NonogramBoard,
+
     /// Selected cell.
     pub selected_cell: Option<[usize; 2]>,
+
     /// Stores last mouse cursor position.
     cursor_pos: [f64; 2],
+
     /// Stores whether a left mouse button or a right mouse button are being held down.
     mouse_d: [bool; 2],
+
     /// Whether or not mouse was original clicked on board.
     board_d: bool,
+
     /// Stores current cell type being manipulated (empty, filled, marked).
     current_action: u8,
+
     /// Current status of dimensions dropdown menu.
     pub dimensions_dropdown_menu: ButtonInteraction,
+
     /// Index of dropdown menu selected, and interaction type.
     pub dimensions_dropdown_options: (usize, ButtonInteraction),
+
     /// Current status of restart button.
     pub restart_button: ButtonInteraction,
+
     /// Current status of new game button.
-    pub new_game_button: ButtonInteraction
+    pub new_game_button: ButtonInteraction,
 }
 
 impl NonogramController {
     /// Creates a new nonogram controller.
     pub fn new(nonogram: NonogramBoard) -> NonogramController {
-        let mut controller = NonogramController {
+        NonogramController {
             nonogram,
             selected_cell: None,
             cursor_pos: [0.0; 2],
@@ -47,13 +56,16 @@ impl NonogramController {
             dimensions_dropdown_options: (0, ButtonInteraction::None),
             restart_button: ButtonInteraction::None,
             new_game_button: ButtonInteraction::None,
-        };
-        controller
+        }
     }
 
     /// Handles events.
     //
     // Refer to this documentation for event traits: https://docs.rs/piston/0.49.0/piston/index.html#traits
+    //
+    // This triggers a Clippy warning for cognitive complexity. There's nothing that can be done about this, because
+    // it's caused by the `GenericEvent` trait.
+    #[allow(clippy::cognitive_complexity)]
     pub fn event<E: GenericEvent>(
         &mut self,
         board_pos: [f64; 2],
@@ -69,7 +81,7 @@ impl NonogramController {
         //println!("{:?}", e.event_id());
 
         if self.nonogram.end_game_screen {
-        //if true {
+            //if true {
             if let Some(pos) = e.mouse_cursor_args() {
                 self.cursor_pos = [pos[0], pos[1]];
 
@@ -82,9 +94,9 @@ impl NonogramController {
                     if self.new_game_button == ButtonInteraction::None {
                         self.new_game_button = ButtonInteraction::Hover;
                     }
-                } else if self.new_game_button == ButtonInteraction::Hover {
-                    self.new_game_button = ButtonInteraction::None;
-                } else if self.new_game_button == ButtonInteraction::Select && self.mouse_d[0] {
+                } else if self.new_game_button == ButtonInteraction::Hover
+                    || (self.new_game_button == ButtonInteraction::Select && self.mouse_d[0])
+                {
                     self.new_game_button = ButtonInteraction::None;
                 }
             }
@@ -124,7 +136,7 @@ impl NonogramController {
                     Err(why) => panic!("couldn't create {}: {}", display, why.description()),
                     Ok(file) => file,
                 };
-            
+
                 // Serialize it to a JSON string.
                 //let j = serde_json::to_string(&self.nonogram.goal_nums);
 
@@ -138,12 +150,12 @@ impl NonogramController {
                     "goal_black": self.nonogram.goal_black,
                     "duration": self.nonogram.duration,
                 });
-                
+
                 match serde_json::to_writer_pretty(file, &save_data) {
                     Err(why) => panic!("couldn't write to {}: {}", display, why.description()),
                     Ok(_) => println!("successfully wrote to {}", display),
                 }
-                
+
                 println!("Nonogram game closed. Progress has been successfully saved.");
             }
         } else {
@@ -157,9 +169,11 @@ impl NonogramController {
 
                 // Check that coordinates are inside dimensions dropdown menu button.
                 if self.cursor_pos[0] >= dimensions_dropdown_menu_box[0]
-                    && self.cursor_pos[0] <= (dimensions_dropdown_menu_box[0] + dimensions_dropdown_menu_box[2])
+                    && self.cursor_pos[0]
+                        <= (dimensions_dropdown_menu_box[0] + dimensions_dropdown_menu_box[2])
                     && self.cursor_pos[1] >= dimensions_dropdown_menu_box[1]
-                    && self.cursor_pos[1] <= (dimensions_dropdown_menu_box[1] + dimensions_dropdown_menu_box[3])
+                    && self.cursor_pos[1]
+                        <= (dimensions_dropdown_menu_box[1] + dimensions_dropdown_menu_box[3])
                 {
                     if self.dimensions_dropdown_menu == ButtonInteraction::None {
                         self.dimensions_dropdown_menu = ButtonInteraction::Hover;
@@ -169,16 +183,21 @@ impl NonogramController {
                 }
 
                 // Check that coordinates are inside sub menu of dimensions dropdown menu.
-                let dropdown_sub_menu_y_min = dimensions_dropdown_menu_box[1] + dimensions_dropdown_menu_box[3];
-                let dropdown_sub_menu_y_max = dropdown_sub_menu_y_min + (dimensions_dropdown_menu_box[3] * (DIMENSIONS_CHOICES.len() + 2) as f64);
+                let dropdown_sub_menu_y_min =
+                    dimensions_dropdown_menu_box[1] + dimensions_dropdown_menu_box[3];
+                let dropdown_sub_menu_y_max = dropdown_sub_menu_y_min
+                    + (dimensions_dropdown_menu_box[3] * (DIMENSIONS_CHOICES.len() + 2) as f64);
                 if self.dimensions_dropdown_menu == ButtonInteraction::Select
                     && self.cursor_pos[0] >= dimensions_dropdown_menu_box[0]
-                    && self.cursor_pos[0] <= (dimensions_dropdown_menu_box[0] + dimensions_dropdown_menu_box[2])
+                    && self.cursor_pos[0]
+                        <= (dimensions_dropdown_menu_box[0] + dimensions_dropdown_menu_box[2])
                     && self.cursor_pos[1] >= dropdown_sub_menu_y_min
                     && self.cursor_pos[1] <= dropdown_sub_menu_y_max
-                { 
-                    let dimension_sub_index = ((self.cursor_pos[1] - dropdown_sub_menu_y_min) / (dimensions_dropdown_menu_box[3] + 5.0));
-                    self.dimensions_dropdown_options = (dimension_sub_index as usize, ButtonInteraction::Hover);
+                {
+                    let dimension_sub_index = (self.cursor_pos[1] - dropdown_sub_menu_y_min)
+                        / (dimensions_dropdown_menu_box[3] + 5.0);
+                    self.dimensions_dropdown_options =
+                        (dimension_sub_index as usize, ButtonInteraction::Hover);
                     self.selected_cell = None;
                 } else {
                     self.dimensions_dropdown_options = (0, ButtonInteraction::None);
@@ -189,13 +208,13 @@ impl NonogramController {
                         let cell_x = (x / size[0] * self.nonogram.dimensions[0] as f64) as usize;
                         let cell_y = (y / size[1] * self.nonogram.dimensions[1] as f64) as usize;
                         self.selected_cell = Some([cell_x, cell_y]);
-                        if self.nonogram.get([cell_x, cell_y]) == self.current_action {
-                            if self.board_d {
-                                if self.mouse_d[0] {
-                                    self.nonogram.set([cell_x, cell_y], 1);
-                                } else if self.mouse_d[1] {
-                                    self.nonogram.set([cell_x, cell_y], 2);
-                                }
+                        if self.nonogram.get([cell_x, cell_y]) == self.current_action
+                            && self.board_d
+                        {
+                            if self.mouse_d[0] {
+                                self.nonogram.set([cell_x, cell_y], 1);
+                            } else if self.mouse_d[1] {
+                                self.nonogram.set([cell_x, cell_y], 2);
                             }
                         }
                     } else {
@@ -212,9 +231,9 @@ impl NonogramController {
                     if self.restart_button == ButtonInteraction::None {
                         self.restart_button = ButtonInteraction::Hover;
                     }
-                } else if self.restart_button == ButtonInteraction::Hover {
-                    self.restart_button = ButtonInteraction::None;
-                } else if self.restart_button == ButtonInteraction::Select && self.mouse_d[0] {
+                } else if self.restart_button == ButtonInteraction::Hover
+                    || (self.restart_button == ButtonInteraction::Select && self.mouse_d[0])
+                {
                     self.restart_button = ButtonInteraction::None;
                 }
             }
@@ -232,7 +251,8 @@ impl NonogramController {
                     ButtonInteraction::Select => {
                         self.dimensions_dropdown_menu = ButtonInteraction::None;
                         if self.dimensions_dropdown_options.1 == ButtonInteraction::Hover {
-                            self.nonogram.next_dimensions = DIMENSIONS_CHOICES[self.dimensions_dropdown_options.0];
+                            self.nonogram.next_dimensions =
+                                DIMENSIONS_CHOICES[self.dimensions_dropdown_options.0];
                             self.dimensions_dropdown_options = (0, ButtonInteraction::None);
                         }
                     }
@@ -280,12 +300,12 @@ impl NonogramController {
                 self.mouse_d[1] = false;
                 self.board_d = false;
             }
-            
+
             // Check if ESC key has been released.
             //
             // Refer to this documentation for keyboard key names: http://docs.piston.rs/mush/piston/input/enum.Key.html
             if let Some(Button::Keyboard(Key::Escape)) = e.release_args() {
-                println!("Escape key pressed"); 
+                println!("Escape key pressed");
             }
 
             // Check if "r" key has been released.
@@ -295,15 +315,21 @@ impl NonogramController {
 
             // Check if "Up" key has been released.
             if let Some(Button::Keyboard(Key::Up)) = e.release_args() {
-                let dimensions_index = DIMENSIONS_CHOICES.iter().position(|&r| r == self.nonogram.next_dimensions).unwrap();
+                let dimensions_index = DIMENSIONS_CHOICES
+                    .iter()
+                    .position(|&r| r == self.nonogram.next_dimensions)
+                    .unwrap();
                 if dimensions_index < DIMENSIONS_CHOICES.len() - 1 {
                     self.nonogram.next_dimensions = DIMENSIONS_CHOICES[dimensions_index + 1];
-                } 
+                }
             }
 
             // Check if "Down" key has been released.
             if let Some(Button::Keyboard(Key::Down)) = e.release_args() {
-                let dimensions_index = DIMENSIONS_CHOICES.iter().position(|&r| r == self.nonogram.next_dimensions).unwrap();
+                let dimensions_index = DIMENSIONS_CHOICES
+                    .iter()
+                    .position(|&r| r == self.nonogram.next_dimensions)
+                    .unwrap();
                 if dimensions_index > 0 {
                     self.nonogram.next_dimensions = DIMENSIONS_CHOICES[dimensions_index - 1];
                 }
@@ -327,7 +353,7 @@ impl NonogramController {
                 Err(why) => panic!("couldn't create {}: {}", display, why.description()),
                 Ok(file) => file,
             };
-        
+
             // Serialize it to a JSON string.
             //let j = serde_json::to_string(&self.nonogram.goal_nums);
 
@@ -342,12 +368,12 @@ impl NonogramController {
                 "duration": self.nonogram.duration,
                 "end_game_screen": self.nonogram.end_game_screen,
             });
-            
+
             match serde_json::to_writer_pretty(file, &save_data) {
                 Err(why) => panic!("couldn't write to {}: {}", display, why.description()),
                 Ok(_) => println!("successfully wrote to {}", display),
             }
-            
+
             println!("Nonogram game closed. Progress has been successfully saved.");
         }
     }

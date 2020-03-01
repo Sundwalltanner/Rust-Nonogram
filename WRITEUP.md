@@ -54,7 +54,7 @@ Finally, I've been looking through some of [the more popular Github repositories
 ## How it works
 From the beginning, I was looking for a game engine in Rust that was both easy to learn, and would provide me with exactly what I needed in order to build a Nonogram game. I ended up choosing [Piston](https://www.piston.rs/) after taking a look at it, [Amethyst](https://amethyst.rs/), and [ggez](https://ggez.rs/). After recently realizing the game is basically just a GUI, I regret not just using something like [Conrod](https://docs.rs/conrod/0.61.1/conrod/).
 
-So basically, in [main.rs](https://github.com/Sundwalltanner/Rust-Nonogram/blob/master/src/main.rs) there's a ```while``` loop that's constantly wiping the screen, drawing to it, and detecting input as long as the program is the active window. This ends up leading to noticeable problems such as the timer not visually updating if the window isn't active. It keeps track of the time correctly, and will jump ahead when the window is reactivated. It's just a weird problem I wasn't able to fix due to the way Piston works.
+So basically, in [main.rs](https://github.com/Sundwalltanner/Rust-Nonogram/blob/master/src/main.rs) there's a ```while``` loop that's constantly wiping the screen, drawing to it, and detecting input.
 
 I'm also using the following dependencies:
 * [rand](https://docs.rs/rand/0.7.3/rand/)
@@ -66,9 +66,29 @@ I'm also using the following dependencies:
 ## What doesn't work
 There's not a whole lot to this section. I gave myself a lot of time to work on this project, and basically everything I've done beyond the first week of working on it has been a stretch goal because I'm genuinely enjoying working on this. The things in this list are just things I would like to add if given more time:
 
-* As mentioned, due to the way Piston works, the window isn't updating unless it's considered active. This means the timer doesn't display the correct time until the window is activated again. This doesn't mean time is tracked incorrectly, this just means the time will jump forward to the correct time suddenly when the window is reactivated.
 * The way I'm reading the save file in prevents old save files from being compatible. By old save files, I mean that if I change any of the info that's saved, users will have to delete their current save file in order for the program to run. If I want to add ```number_of_wins``` at some point, old save files without this stat will cause the program to crash.
-* Dropdown menu doesn't currently work.
+* Hint number crossout implementation isn't ideal at the moment.
+* If there are too many column hint numbers, like for a 30x30 nonogram board, they may end up hidden behind the buttons at the top of the window.
+
+## Testing
+Testing is pretty barebones largely due to my lack of knowledge in regards to Piston. I currently only have testing implemented for [nonogram_board.rs](https://github.com/Sundwalltanner/Rust-Nonogram/blob/master/src/nonogram_board.rs). 
+
+I've tried adding testing for [nonogram_board_view.rs](https://github.com/Sundwalltanner/Rust-Nonogram/blob/master/src/nonogram_board_view.rs) and [nonogram_controller.rs](https://github.com/Sundwalltanner/Rust-Nonogram/blob/master/src/nonogram_controller.rs), but each only have one function, and there's not much I can do to test these functions. 
+
+[nonogram_board_view.rs's](https://github.com/Sundwalltanner/Rust-Nonogram/blob/master/src/nonogram_board_view.rs) only purpose is to draw what needs to be displayed in the window, so it seems basically impossible to test.
+
+I tried following what [the Piston developers](https://github.com/PistonDevelopers/piston/blob/master/src/input/tests/lib.rs) are currently doing as far as testing input goes, but we're using a variable type of ```GenericEvent```, and I can't figure out how to translate their work to this in order to emulate user input and test it.
+
+I also haven't created a library, so there isn't any integration testing being done.
+
+## Clippy
+I ran into some issues with ```Cargo clippy``` and ```Cargo fmt``` fighting with each other. ```Cargo fmt``` would reformat my code into multiple lines, and then ```Cargo clippy``` would yell at me because it thought there might need to be commas separating these lines. I looked this up, and it should have been fixed two years ago, but I guess it wasn't. I temporarily fixed this issue by needlessly creating new variables.
+
+All the major Clippy warnings should be gone, but there are some I cannot get rid of:
+* Cognitive complexity warning for [nonogram_controller.rs's](https://github.com/Sundwalltanner/Rust-Nonogram/blob/master/src/nonogram_controller.rs) ```event()``` function.
+    * This is caused by the [GenericEvent](https://docs.rs/piston/0.13.0/piston/input/trait.GenericEvent.html) trait being passed in. I can't do anything about this.
+* Cognitive complexity warning for [nonogram_board_view.rs's](https://github.com/Sundwalltanner/Rust-Nonogram/blob/master/src/nonogram_board_view.rs) ```draw()``` function.
+    * Not much I can do here. This is a huge function.
 
 ## What lessons were learned
 I knew from the beginning due to the research I did before writing my initial project proposal that the largest obstacle wouldn't be learning Rust, but learning Piston and other external libraries I would have to rely on. That ended up being completely true, and as I said, if I started again, I probably wouldn't use Piston. A lot of documentation is outdated, doesn't include any examples, and there's generally nobody really talking about this game engine on the internet.

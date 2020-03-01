@@ -1,9 +1,9 @@
 //! Contains enums and constants frequently used throughout the program.
-//! 
+//!
 //! The following files use these parts:
 //! - [main], utilizes [INITIAL_WINDOW_SIZE] and [INITIAL_BOARD_DIMENSIONS] for window and board initialization.
 //! - [nonogram_board_view], utilizes [BOARD_SIZE], [DIMENSIONS_CHOICES], [IMAGE_PRE], [IMAGE_NAMES], and [ButtonInteraction].
-//! 
+//!
 //! [main]: ../fn.main.html
 //! [nonogram_board_view]: ../nonogram_board_view/index.html
 //! [ButtonInteraction]: enum.ButtonInteraction.html

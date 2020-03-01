@@ -1,9 +1,9 @@
 //! Responsible for everything that isn't input or graphics.
 
-use std::time::{Duration, Instant};
 use rand::distributions::{Bernoulli, Distribution};
-use std::fs;
 use serde::{Deserialize, Serialize};
+use std::fs;
+use std::time::{Duration, Instant};
 
 /// Contains the information we're going to save in between each session.
 #[derive(Serialize, Deserialize)]
@@ -27,16 +27,16 @@ pub struct NonogramBoard {
     pub next_dimensions: [usize; 2],
 
     /// Contains all cell data of the current nonogram board.
-    /// 
+    ///
     /// A cell can be empty(0), filled(1), or marked(2).
     pub data: Vec<Vec<u8>>,
 
     /// The maximum hint numbers for the columns and rows depending on the board dimensions.
-    /// 
+    ///
     /// This is equal to the number of cells in that column or row divided by 2 and rounded up.
-    /// 
+    ///
     /// Example: The maximum hint numbers in a column of 5 cells is 3.
-    /// 
+    ///
     /// This is calculated on initialization like this:
     /// ```
     /// self.nums_per[0] = (self.dimensions[1] as f64 / 2.0_f64).round() as u64;
@@ -53,7 +53,7 @@ pub struct NonogramBoard {
     pub goal_nums: Vec<Vec<Vec<i8>>>,
 
     /// The current hint numbers.
-    /// 
+    ///
     /// Because we don't generate unique goal states, this is what we compare with the goal_nums in order
     /// to determine whether or not we've reached a valid goal state.
     pub current_nums: Vec<Vec<Vec<i8>>>,
@@ -92,7 +92,7 @@ impl NonogramBoard {
     pub fn new(next_dimensions: [usize; 2], reset_board: bool) -> NonogramBoard {
         let mut board = NonogramBoard {
             dimensions: next_dimensions,
-            next_dimensions: next_dimensions,
+            next_dimensions,
             data: vec![vec![]],
             nums_per: [0; 2],
             goal_nums: vec![vec![vec![]]],
@@ -101,7 +101,7 @@ impl NonogramBoard {
             game_end: None,
             end_game_screen: false,
             duration: Duration::from_secs(0),
-            reset_board: reset_board,
+            reset_board,
             last_time: None,
             count_black: 0,
             goal_black: 0,
@@ -118,27 +118,28 @@ impl NonogramBoard {
         self.goal_nums.clear();
         self.current_nums.clear();
 
-        let save_data = fs::read_to_string("savedata.json").unwrap_or("".to_string());
+        let save_data = fs::read_to_string("savedata.json").unwrap_or_else(|_| "".to_string());
 
         // If there is no save data file or if we're generating a brand-new board.
         if save_data.is_empty() || self.reset_board {
             for _col in 0..self.dimensions[0] {
                 self.data.push(vec![0; self.dimensions[1]]);
             }
-    
+
             self.nums_per[0] = (self.dimensions[1] as f64 / 2.0_f64).round() as u64;
             self.nums_per[1] = (self.dimensions[0] as f64 / 2.0_f64).round() as u64;
-    
+
             for i in 0..2 {
                 self.goal_nums
                     .push(vec![vec![0; self.nums_per[i] as usize]; self.dimensions[i]]);
                 self.current_nums
                     .push(vec![vec![0; self.nums_per[i] as usize]; self.dimensions[i]]);
             }
-            
+
             self.initialize();
         } else {
-            let v: SavedBoard = serde_json::from_str(&save_data).expect("Your savedata.json file is incompatible. Delete it.");
+            let v: SavedBoard = serde_json::from_str(&save_data)
+                .expect("Your savedata.json file is incompatible. Delete it.");
             self.dimensions = v.dimensions;
             self.next_dimensions = v.next_dimensions;
             self.data = v.data;
@@ -158,7 +159,11 @@ impl NonogramBoard {
     pub fn check_win(&self) -> bool {
         for i in 0..2 {
             for k in 0..self.dimensions[i] {
-                if !self.goal_nums[i][k].iter().zip(self.current_nums[i][k].iter()).all(|(a,b)| a.abs() == b.abs()) {
+                if !self.goal_nums[i][k]
+                    .iter()
+                    .zip(self.current_nums[i][k].iter())
+                    .all(|(a, b)| a.abs() == b.abs())
+                {
                     return false;
                 }
             }
@@ -229,15 +234,13 @@ impl NonogramBoard {
             let mut filling = false;
             for row in 0..self.dimensions[1] {
                 if self.data[col][row] == 1 {
-                    if filling == false {
+                    if !filling {
                         filling = true;
                     }
                     nums[0][col][num_hint] += 1;
-                } else {
-                    if filling {
-                        filling = false;
-                        num_hint += 1;
-                    }
+                } else if filling {
+                    filling = false;
+                    num_hint += 1;
                 }
             }
         }
@@ -248,15 +251,13 @@ impl NonogramBoard {
             let mut filling = false;
             for col in 0..self.dimensions[0] {
                 if self.data[col][row] == 1 {
-                    if filling == false {
+                    if !filling {
                         filling = true;
                     }
                     nums[1][row][num_hint] += 1;
-                } else {
-                    if filling {
-                        filling = false;
-                        num_hint += 1;
-                    }
+                } else if filling {
+                    filling = false;
+                    num_hint += 1;
                 }
             }
         }
@@ -265,7 +266,7 @@ impl NonogramBoard {
 
     /// Hint numbers are stored as signed integers, which means that we utilize the negative values in order to
     /// declare some of the hint numbers as crossed out in order to assist the player.
-    /// 
+    ///
     /// For example, if the hint numbers in a row are [1, 3, 1, 2] and the player fills in a single square, in
     /// the background, that first 1 will actually be -1. It will be displayed to the user as 1 still, but it will
     /// have a different color to it in order to inform the user that it's crossed out.
@@ -296,8 +297,7 @@ impl NonogramBoard {
                             match_it = current_it + 1;
                             break;
                         } else {
-                            self.goal_nums[0][k][goal_it] =
-                                self.goal_nums[0][k][goal_it].abs();
+                            self.goal_nums[0][k][goal_it] = self.goal_nums[0][k][goal_it].abs();
                         }
                         current_it += 1;
                     }
@@ -322,7 +322,7 @@ impl NonogramBoard {
             }
             while goal_it < self.nums_per[1] as usize {
                 if self.goal_nums[1][k][goal_it] != 0 {
-                    while current_it < self.nums_per[1] as usize{
+                    while current_it < self.nums_per[1] as usize {
                         if self.goal_nums[1][k][goal_it].abs()
                             == self.current_nums[1][k][current_it]
                             && match_count
@@ -333,8 +333,7 @@ impl NonogramBoard {
                             match_it = current_it + 1;
                             break;
                         } else {
-                            self.goal_nums[1][k][goal_it] =
-                                self.goal_nums[1][k][goal_it].abs();
+                            self.goal_nums[1][k][goal_it] = self.goal_nums[1][k][goal_it].abs();
                         }
                         current_it += 1;
                     }
@@ -352,5 +351,60 @@ impl NonogramBoard {
         self.wipe_board();
         self.game_start = Some(Instant::now());
         self.reset_board = false;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_new() {
+        let nonogram = NonogramBoard::new([5, 5], true);
+        assert_eq!(nonogram.dimensions, [5, 5], "Board has correct dimensions.");
+        assert_eq!(nonogram.nums_per, [3, 3], "Correct number of hint nums.");
+        assert_eq!(nonogram.check_win(), false, "Goal was generated.");
+        assert_eq!(nonogram.count_black, 0, "Correct number for count_black.");
+        assert_ne!(nonogram.goal_black, 0, "Goal was generated.");
+    }
+
+    #[test]
+    fn test_check_win() {
+        let mut nonogram = NonogramBoard::new([5, 5], true);
+        nonogram.set_goal();
+        nonogram.goal_nums = nonogram.get_nums();
+        assert_eq!(nonogram.check_win(), false, "New goal, empty current.");
+        nonogram.current_nums = nonogram.get_nums();
+        assert_eq!(nonogram.check_win(), true, "Goal and current are the same.");
+        nonogram.wipe_board();
+        nonogram.current_nums = nonogram.get_nums();
+        assert_eq!(
+            nonogram.check_win(),
+            false,
+            "Wipe current. Goal and current aren't the same."
+        );
+    }
+
+    #[test]
+    fn test_set() {
+        let mut nonogram = NonogramBoard::new([5, 5], true);
+        assert_eq!(
+            nonogram.data[4][4], 0,
+            "Data is initialized as 0, or empty."
+        );
+        nonogram.set([4, 4], 1);
+        assert_eq!(nonogram.data[4][4], 1, "Used set() to change value to 1.");
+    }
+
+    #[test]
+    fn test_get() {
+        let mut nonogram = NonogramBoard::new([5, 5], true);
+        assert_eq!(
+            nonogram.get([4, 4]),
+            0,
+            "Data is initialized as 0, or empty."
+        );
+        nonogram.data[4][4] = 1;
+        assert_eq!(nonogram.get([4, 4]), 1, "Changed value to 1.");
     }
 }

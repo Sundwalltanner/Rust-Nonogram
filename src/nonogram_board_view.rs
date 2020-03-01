@@ -4,10 +4,9 @@ use graphics::character::CharacterCache;
 use graphics::color::hex;
 use graphics::types::Color;
 use graphics::{Context, Graphics};
-use piston::window::Size;
 use rand::seq::SliceRandom;
 
-use crate::common::{BOARD_SIZE, DIMENSIONS_CHOICES, IMAGE_PRE, IMAGE_NAMES, ButtonInteraction};
+use crate::common::{ButtonInteraction, BOARD_SIZE, DIMENSIONS_CHOICES, IMAGE_NAMES, IMAGE_PRE};
 use crate::NonogramController;
 
 #[derive(Default)]
@@ -15,44 +14,91 @@ use crate::NonogramController;
 pub struct NonogramViewSettings {
     /// X and Y coordinates of nonogram board relative to top left corner of the window.
     pub position: [f64; 2],
+
     /// Overall size value of nonogram board. This ends up being used in an equation which determines
     /// the width and height of the board based on how many rows and columns it has.
     pub size: f64,
+
     /// [width, height] of nonogram board.
     pub board_dimensions: [f64; 2],
+
     /// [columns, rows] in nonogram board.
     pub cell_dimensions: [usize; 2],
-    /// Both the width and height of a single square in the nonogram board.
+
+    /// Both the width and height of a single cell in the nonogram board.
     pub cell_size: f64,
+
     /// [width, height] of nonogram board when displayed during win screen.
     pub win_board_dimensions: [f64; 2],
-    /// Both the width and height of a single square in the nonogram board displayed during win screen.
+
+    /// Both the width and height of a single cell in the nonogram board displayed during win screen.
     pub win_cell_size: f64,
-    /// Nonogram board color. Determines color of unfilled square in nonogram board.
+
+    /// Nonogram board color. Determines color of unfilled cell in nonogram board.
     pub background_color: Color,
+
     /// Color of overall nonogram board edge.
     pub board_edge_color: Color,
-    /// Color of edges separating every 5 squares in nonogram board.
+
+    /// Color of edges separating every 5 cells in nonogram board.
     pub section_edge_color: Color,
-    /// Color of individual nonogram board square edge.
+
+    /// Color of individual nonogram board cell edge.
     pub cell_edge_color: Color,
+
     /// Thickness of nonogram board edge.
     pub board_edge_radius: f64,
-    /// Thickness of edges separating every 5 squares in nonogram board.
+
+    /// Thickness of edges separating every 5 cells in nonogram board.
     pub section_edge_radius: f64,
-    /// Thickness of edges of each individual board square.
+
+    /// Thickness of edges of each individual board cell.
     pub cell_edge_radius: f64,
+
+    /// Edge color of selected board cell.
     pub selected_cell_border_color: Color,
+
+    /// Round radius of selected board cell's edge.
     pub selected_cell_border_round_radius: f64,
+
+    /// Radius of selected cell's edge.
     pub selected_cell_border_radius: f64,
+
+    /// Background color of filled cell.
     pub filled_cell_background_color: Color,
+
+    /// Background color of marked cell.
     pub marked_cell_background_color: Color,
+
+    /// General color of basically all text in the game.
     pub text_color: Color,
+
+    /// Location and size of unselected dimensions dropdown menu box.
+    ///
+    /// Format: [x, y, width, height]
     pub dimensions_dropdown_menu_box: [f64; 4],
+
+    /// Location and size of selected dimensions dropdown menu box.
+    ///
+    /// Format: [x, y, width, height]
     pub dimensions_dropdown_menu_select_background: [f64; 4],
+
+    /// Location and size of win stats box.
+    ///
+    /// Format: [x, y, width, height]
     pub win_box_rect: [f64; 4],
+
+    /// Location and size of restart button in main game screen.
+    ///
+    /// Format: [x, y, width, height]
     pub restart_box: [f64; 4],
+
+    /// Location and size of new game button on win screen.
+    ///
+    /// Format: [x, y, width, height]
     pub new_game_box: [f64; 4],
+
+    /// Randomly generated win critique of user's winning game board.
     pub win_critique: String,
 }
 
@@ -90,7 +136,9 @@ impl NonogramViewSettings {
         view_settings.init_new();
         view_settings
     }
-    
+
+    /// Only called when a new `NonogramViewSettings` object is created.
+    /// Responsible for initializing all variables that couldn't be initialized in `new()`.
     fn init_new(&mut self) {
         // Because the dimensions of the board can vary, we need to initialize the locations of cells based on these dimensions
         // and the size of the board which is set by the BOARD_SIZE const in common.rs.
@@ -118,12 +166,13 @@ impl NonogramViewSettings {
         self.win_board_dimensions[0] = self.win_cell_size * cols;
 
         // Win box containing stats is center-aligned.
-        self.win_box_rect[0] = self.win_box_rect[0] - (self.win_box_rect[2] / 2.0);
-        self.win_box_rect[1] = self.win_box_rect[1] - (self.win_box_rect[3] / 2.0);
+        self.win_box_rect[0] -= self.win_box_rect[2] / 2.0;
+        self.win_box_rect[1] -= self.win_box_rect[3] / 2.0;
 
         // New game box / button at the bottom of the win box is center aligned and located at the very bottom of the win box.
         self.new_game_box[2] = self.win_box_rect[2];
-        self.new_game_box[0] = self.win_box_rect[0] + (self.win_box_rect[2] / 2.0) - (self.new_game_box[2] / 2.0);
+        self.new_game_box[0] =
+            self.win_box_rect[0] + (self.win_box_rect[2] / 2.0) - (self.new_game_box[2] / 2.0);
         self.new_game_box[1] = self.win_box_rect[1] + self.win_box_rect[3] - self.new_game_box[3];
 
         // Setup dimensions dropdown menu stuff.
@@ -138,13 +187,18 @@ pub struct NonogramView {
     pub settings: NonogramViewSettings,
 }
 
+/// `NonogramView` functionality.
 impl NonogramView {
     /// Creates a new nonogram view.
     pub fn new(settings: NonogramViewSettings) -> NonogramView {
         NonogramView { settings }
     }
 
-    /// Draw nonogram.
+    /// Draw everything in the game.
+    ///
+    /// This ends up being responsible for the main game screen's contents or the win screen's contents
+    /// based on the value for `controller.nonogram.end_game_screen`.
+    #[allow(clippy::cognitive_complexity)]
     pub fn draw<G: Graphics, C>(
         &self,
         controller: &NonogramController,
@@ -153,9 +207,6 @@ impl NonogramView {
         material_icons_glyphs: &mut C,
         c: &Context,
         g: &mut G,
-        count_black: u64,
-        goal_black: u64,
-        window_size: Size,
     ) where
         C: CharacterCache<Texture = G::Texture>,
     {
@@ -163,9 +214,6 @@ impl NonogramView {
         use graphics::{Line, Rectangle, Transformed};
 
         let settings = &self.settings;
-
-        // Rectangle the size of the entire inner window.
-        let window_rect = [0.0, 0.0, window_size.width, window_size.height];
 
         let total_seconds = controller.nonogram.duration.as_secs();
         let total_mins = total_seconds / 60;
@@ -179,7 +227,7 @@ impl NonogramView {
 
         // Draw win screen.
         if controller.nonogram.end_game_screen {
-        //if true {
+            //if true {
             Rectangle::new_round(hex("333333"), 10.0).draw(
                 settings.win_box_rect,
                 &c.draw_state,
@@ -188,18 +236,20 @@ impl NonogramView {
             );
             // Randomly generated artist critique of player's winning image.
             let critique_size = 25;
-            let critique_width = glyphs.width(critique_size, &settings.win_critique).unwrap_or(0.0);
-            let critique_loc = [
-                settings.win_box_rect[0] + (settings.win_box_rect[2] / 2.0) - (critique_width / 2.0),
-                settings.win_box_rect[1] - 30.0,
-            ];
-            Text::new_color(hex("ffffff"), critique_size)
+            let critique_width = glyphs
+                .width(critique_size, &settings.win_critique)
+                .unwrap_or(0.0);
+            // Cargo fmt makes this this way, and Cargo clippy yells at us about it if we try and do the math
+            // directly in the critique_loc array. This isn't my fault.
+            let critique_x = settings.win_box_rect[0] + (settings.win_box_rect[2] / 2.0)
+                - (critique_width / 2.0);
+            let critique_loc = [critique_x, settings.win_box_rect[1] - 30.0];
+            Text::new_color(settings.text_color, critique_size)
                 .draw(
                     &settings.win_critique,
                     glyphs,
                     &c.draw_state,
-                    c.transform
-                        .trans(critique_loc[0], critique_loc[1]),
+                    c.transform.trans(critique_loc[0], critique_loc[1]),
                     g,
                 )
                 .unwrap_or_else(|_| panic!("text draw failed"));
@@ -212,7 +262,7 @@ impl NonogramView {
             ];
 
             // Left-aligned timer title.
-            Text::new_color(hex("ffffff"), 25)
+            Text::new_color(settings.text_color, 25)
                 .draw(
                     &"TIME",
                     glyphs,
@@ -226,7 +276,7 @@ impl NonogramView {
             let timer_str = format!("{:02}:{:02}:{:02}", total_hrs, rem_mins, rem_seconds);
             let timer_size = 25;
             let timer_width = glyphs.width(timer_size, &timer_str).unwrap_or(0.0);
-            Text::new_color(hex("ffffff"), timer_size)
+            Text::new_color(settings.text_color, timer_size)
                 .draw(
                     &timer_str,
                     glyphs,
@@ -238,7 +288,7 @@ impl NonogramView {
 
             // Left-aligned black count title.
             stat_row_y += stat_row_margins[1];
-            Text::new_color(hex("ffffff"), 25)
+            Text::new_color(settings.text_color, 25)
                 .draw(
                     &"BLACK",
                     glyphs,
@@ -248,11 +298,13 @@ impl NonogramView {
                 )
                 .unwrap_or_else(|_| panic!("text draw failed"));
 
-            // Right-aligned count of black/filled squares.
+            // Right-aligned count of black/filled cells.
             let black_count_str = format!("{:>8}", controller.nonogram.goal_black);
             let black_count_size = 25;
-            let black_count_width = glyphs.width(black_count_size, &black_count_str).unwrap_or(0.0);
-            Text::new_color(hex("ffffff"), black_count_size)
+            let black_count_width = glyphs
+                .width(black_count_size, &black_count_str)
+                .unwrap_or(0.0);
+            Text::new_color(settings.text_color, black_count_size)
                 .draw(
                     &black_count_str,
                     glyphs,
@@ -266,8 +318,8 @@ impl NonogramView {
             // New stat row.
             stat_row_y += stat_row_margins[1];
 
-            // Left-aligned total square count title.
-            Text::new_color(hex("ffffff"), 25)
+            // Left-aligned total cell count title.
+            Text::new_color(settings.text_color, 25)
                 .draw(
                     &"TOTAL",
                     glyphs,
@@ -277,12 +329,14 @@ impl NonogramView {
                 )
                 .unwrap_or_else(|_| panic!("text draw failed"));
 
-            // Right-aligned total count of squares.
+            // Right-aligned total count of cells.
             let total_count = controller.nonogram.dimensions[0] * controller.nonogram.dimensions[1];
             let total_count_str = format!("{}", total_count);
             let total_count_size = 25;
-            let total_count_width = glyphs.width(total_count_size, &total_count_str).unwrap_or(0.0);
-            Text::new_color(hex("ffffff"), total_count_size)
+            let total_count_width = glyphs
+                .width(total_count_size, &total_count_str)
+                .unwrap_or(0.0);
+            Text::new_color(settings.text_color, total_count_size)
                 .draw(
                     &total_count_str,
                     glyphs,
@@ -297,7 +351,7 @@ impl NonogramView {
             stat_row_y += stat_row_margins[1];
 
             // Left-aligned black_square/total_square ratio title.
-            Text::new_color(hex("ffffff"), 25)
+            Text::new_color(settings.text_color, 25)
                 .draw(
                     &"RATIO",
                     glyphs,
@@ -311,8 +365,10 @@ impl NonogramView {
             let black_total_ratio = controller.nonogram.goal_black as f64 / total_count as f64;
             let black_total_ratio_str = format!("{:.2}", black_total_ratio);
             let black_total_ratio_size = 25;
-            let black_total_ratio_width = glyphs.width(black_total_ratio_size, &black_total_ratio_str).unwrap_or(0.0);
-            Text::new_color(hex("ffffff"), black_total_ratio_size)
+            let black_total_ratio_width = glyphs
+                .width(black_total_ratio_size, &black_total_ratio_str)
+                .unwrap_or(0.0);
+            Text::new_color(settings.text_color, black_total_ratio_size)
                 .draw(
                     &black_total_ratio_str,
                     glyphs,
@@ -327,7 +383,7 @@ impl NonogramView {
             stat_row_y += stat_row_margins[1];
 
             // Left-aligned dimensions title.
-            Text::new_color(hex("ffffff"), 25)
+            Text::new_color(settings.text_color, 25)
                 .draw(
                     &"DIMENSIONS",
                     glyphs,
@@ -343,8 +399,10 @@ impl NonogramView {
                 controller.nonogram.dimensions[0], controller.nonogram.dimensions[1]
             );
             let dimensions_size = 25;
-            let dimensions_width = glyphs.width(dimensions_size, &dimensions_str).unwrap_or(0.0);
-            Text::new_color(hex("ffffff"), dimensions_size)
+            let dimensions_width = glyphs
+                .width(dimensions_size, &dimensions_str)
+                .unwrap_or(0.0);
+            Text::new_color(settings.text_color, dimensions_size)
                 .draw(
                     &dimensions_str,
                     glyphs,
@@ -386,12 +444,18 @@ impl NonogramView {
             // New game button text.
             let new_game_button_str = "NEW GAME".to_string();
             let new_game_button_size = 25;
-            let new_game_button_width = glyphs.width(new_game_button_size, &new_game_button_str).unwrap_or(0.0);
-            let new_game_button_loc = [
-                settings.new_game_box[0] + (settings.new_game_box[2] / 2.0) - (new_game_button_width / 2.0),
-                settings.new_game_box[1] + (settings.new_game_box[3] / 2.0) + ((new_game_button_size as f64 * 0.75) / 2.0)
-            ];
-            Text::new_color(hex("ffffff"), new_game_button_size)
+            let new_game_button_width = glyphs
+                .width(new_game_button_size, &new_game_button_str)
+                .unwrap_or(0.0);
+            // Cargo fmt made these this way, and Cargo clippy yells at us if we try to do this when creating the
+            // new_game_button_loc array. This isn't my fault.
+            let new_game_button_x = settings.new_game_box[0] + (settings.new_game_box[2] / 2.0)
+                - (new_game_button_width / 2.0);
+            let new_game_button_y = settings.new_game_box[1]
+                + (settings.new_game_box[3] / 2.0)
+                + ((new_game_button_size as f64 * 0.75) / 2.0);
+            let new_game_button_loc = [new_game_button_x, new_game_button_y];
+            Text::new_color(settings.text_color, new_game_button_size)
                 .draw(
                     &new_game_button_str,
                     glyphs,
@@ -411,7 +475,7 @@ impl NonogramView {
             ];
 
             board_rect[0] += (settings.win_box_rect[2] / 2.0) - (board_rect[2] / 2.0);
-            
+
             Rectangle::new(settings.background_color).draw(
                 board_rect,
                 &c.draw_state,
@@ -509,7 +573,7 @@ impl NonogramView {
             // Draw column and row hint numbers.
             // We calculate the height of text by multiplying font size by 0.75 in order to convert between pixels and points.
             let hint_num_size = 15;
-            let hint_reg = Text::new_color(hex("ffffff"), hint_num_size);
+            let hint_reg = Text::new_color(settings.text_color, hint_num_size);
             let hint_cross = Text::new_color(hex("666666"), hint_num_size);
 
             // Draw column hint numbers.
@@ -521,13 +585,31 @@ impl NonogramView {
                 if controller.nonogram.goal_nums[0][k][0] == 0 {
                     let ch = "0".to_string();
                     let hint_num_width = glyphs.width(hint_num_size, &ch).unwrap_or(0.0);
-                    let col_num_loc =
-                        (settings.cell_size / 2.0) - (hint_num_width as f64 / 2.0);
-                    let col_hint_x = settings.position[0] + (k as f64 * settings.cell_size) + col_num_loc;
+                    let col_num_loc = (settings.cell_size / 2.0) - (hint_num_width as f64 / 2.0);
+                    let col_hint_x =
+                        settings.position[0] + (k as f64 * settings.cell_size) + col_num_loc;
                     let col_hint_y = settings.position[0] - num_pos as f64 * 20.0 - 80.0;
-                    hint_reg
-                        .draw(&ch, glyphs, &c.draw_state, c.transform.trans(col_hint_x, col_hint_y), g)
-                        .unwrap_or_else(|_| panic!("text draw failed"));
+                    if controller.nonogram.current_nums[0][k][0] == 0 {
+                        hint_cross
+                            .draw(
+                                &ch,
+                                glyphs,
+                                &c.draw_state,
+                                c.transform.trans(col_hint_x, col_hint_y),
+                                g,
+                            )
+                            .unwrap_or_else(|_| panic!("text draw failed"));
+                    } else {
+                        hint_reg
+                            .draw(
+                                &ch,
+                                glyphs,
+                                &c.draw_state,
+                                c.transform.trans(col_hint_x, col_hint_y),
+                                g,
+                            )
+                            .unwrap_or_else(|_| panic!("text draw failed"));
+                    }
                 } else {
                     for i in (0..controller.nonogram.nums_per[0] as usize).rev() {
                         let hint_val = controller.nonogram.goal_nums[0][k][i];
@@ -537,17 +619,31 @@ impl NonogramView {
                             let hint_num_width = glyphs.width(hint_num_size, &ch).unwrap_or(0.0);
                             let col_num_loc =
                                 (settings.cell_size / 2.0) - (hint_num_width as f64 / 2.0);
-                            let col_hint_x = settings.position[0] + (k as f64 * settings.cell_size) + col_num_loc;
+                            let col_hint_x = settings.position[0]
+                                + (k as f64 * settings.cell_size)
+                                + col_num_loc;
                             let col_hint_y = settings.position[0] - num_pos as f64 * 20.0 - 80.0;
 
                             // Either draw a normal number, or draw a crossout number.
                             if hint_val > 0 {
                                 hint_reg
-                                    .draw(&ch, glyphs, &c.draw_state, c.transform.trans(col_hint_x, col_hint_y), g)
+                                    .draw(
+                                        &ch,
+                                        glyphs,
+                                        &c.draw_state,
+                                        c.transform.trans(col_hint_x, col_hint_y),
+                                        g,
+                                    )
                                     .unwrap_or_else(|_| panic!("text draw failed"));
                             } else {
                                 hint_cross
-                                    .draw(&ch, glyphs, &c.draw_state, c.transform.trans(col_hint_x, col_hint_y), g)
+                                    .draw(
+                                        &ch,
+                                        glyphs,
+                                        &c.draw_state,
+                                        c.transform.trans(col_hint_x, col_hint_y),
+                                        g,
+                                    )
                                     .unwrap_or_else(|_| panic!("text draw failed"));
                             }
                             num_pos += 1;
@@ -563,9 +659,27 @@ impl NonogramView {
                 let mut num_pos = 0;
                 if controller.nonogram.goal_nums[1][k][0] == 0 {
                     let row_hint_x = settings.position[0] - num_pos as f64 * 20.0 - 25.0;
-                    hint_reg
-                        .draw(&"0", glyphs, &c.draw_state, c.transform.trans(row_hint_x, row_hint_y), g)
-                        .unwrap_or_else(|_| panic!("text draw failed"));
+                    if controller.nonogram.current_nums[1][k][0] == 0 {
+                        hint_cross
+                            .draw(
+                                &"0",
+                                glyphs,
+                                &c.draw_state,
+                                c.transform.trans(row_hint_x, row_hint_y),
+                                g,
+                            )
+                            .unwrap_or_else(|_| panic!("text draw failed"));
+                    } else {
+                        hint_reg
+                            .draw(
+                                &"0",
+                                glyphs,
+                                &c.draw_state,
+                                c.transform.trans(row_hint_x, row_hint_y),
+                                g,
+                            )
+                            .unwrap_or_else(|_| panic!("text draw failed"));
+                    }
                 } else {
                     for i in (0..controller.nonogram.nums_per[1] as usize).rev() {
                         let hint_val = controller.nonogram.goal_nums[1][k][i];
@@ -578,11 +692,23 @@ impl NonogramView {
                             // Either draw a normal number, or draw a crossout number.
                             if hint_val > 0 {
                                 hint_reg
-                                    .draw(&ch, glyphs, &c.draw_state, c.transform.trans(row_hint_x, row_hint_y), g)
+                                    .draw(
+                                        &ch,
+                                        glyphs,
+                                        &c.draw_state,
+                                        c.transform.trans(row_hint_x, row_hint_y),
+                                        g,
+                                    )
                                     .unwrap_or_else(|_| panic!("text draw failed"));
                             } else {
                                 hint_cross
-                                    .draw(&ch, glyphs, &c.draw_state, c.transform.trans(row_hint_x, row_hint_y), g)
+                                    .draw(
+                                        &ch,
+                                        glyphs,
+                                        &c.draw_state,
+                                        c.transform.trans(row_hint_x, row_hint_y),
+                                        g,
+                                    )
                                     .unwrap_or_else(|_| panic!("text draw failed"));
                             }
                             num_pos += 1;
@@ -674,12 +800,14 @@ impl NonogramView {
             // Draw nonogram title.
             let nonogram_title_str = "NONOGRAM".to_string();
             let nonogram_title_size = 25;
-            let nonogram_title_width = glyphs.width(nonogram_title_size, &nonogram_title_str).unwrap_or(0.0);
+            let nonogram_title_width = glyphs
+                .width(nonogram_title_size, &nonogram_title_str)
+                .unwrap_or(0.0);
             let nonogram_title_loc = [
                 info_box_rect[0] + (info_box_rect[2] / 2.0) - (nonogram_title_width / 2.0),
                 60.0,
             ];
-            Text::new_color(hex("ffffff"), nonogram_title_size)
+            Text::new_color(settings.text_color, nonogram_title_size)
                 .draw(
                     &nonogram_title_str,
                     glyphs,
@@ -693,12 +821,14 @@ impl NonogramView {
             // Draw progress title.
             let progress_title_str = "PROGRESS".to_string();
             let progress_title_size = 12;
-            let progress_title_width = glyphs.width(progress_title_size, &progress_title_str).unwrap_or(0.0);
+            let progress_title_width = glyphs
+                .width(progress_title_size, &progress_title_str)
+                .unwrap_or(0.0);
             let progress_title_loc = [
                 info_box_rect[0] + (info_box_rect[2] / 2.0) - (progress_title_width / 2.0),
                 95.0,
             ];
-            Text::new_color(hex("ffffff"), progress_title_size)
+            Text::new_color(settings.text_color, progress_title_size)
                 .draw(
                     &progress_title_str,
                     glyphs,
@@ -712,9 +842,10 @@ impl NonogramView {
             // Draw progress.
             let progress_str = format!(
                 "{} / {} ({:.2}%)",
-                count_black,
-                goal_black,
-                (count_black as f32 / goal_black as f32) * 100.0
+                controller.nonogram.count_black,
+                controller.nonogram.goal_black,
+                (controller.nonogram.count_black as f32 / controller.nonogram.goal_black as f32)
+                    * 100.0
             );
             let progress_size = 25;
             let progress_width = glyphs.width(progress_size, &progress_str).unwrap_or(0.0);
@@ -722,7 +853,7 @@ impl NonogramView {
                 info_box_rect[0] + (info_box_rect[2] / 2.0) - (progress_width / 2.0),
                 120.0,
             ];
-            Text::new_color(hex("ffffff"), progress_size)
+            Text::new_color(settings.text_color, progress_size)
                 .draw(
                     &progress_str,
                     glyphs,
@@ -735,12 +866,14 @@ impl NonogramView {
             // Draw timer title.
             let timer_title_str = "TIMER".to_string();
             let timer_title_size = 12;
-            let timer_title_width = glyphs.width(timer_title_size, &timer_title_str).unwrap_or(0.0);
+            let timer_title_width = glyphs
+                .width(timer_title_size, &timer_title_str)
+                .unwrap_or(0.0);
             let timer_title_loc = [
                 info_box_rect[0] + (info_box_rect[2] / 2.0) - (timer_title_width / 2.0),
                 160.0,
             ];
-            Text::new_color(hex("ffffff"), timer_title_size)
+            Text::new_color(settings.text_color, timer_title_size)
                 .draw(
                     &timer_title_str,
                     glyphs,
@@ -762,7 +895,7 @@ impl NonogramView {
                 info_box_rect[0] + (info_box_rect[2] / 2.0) - (timer_width / 2.0),
                 200.0,
             ];
-            Text::new_color(hex("ffffff"), timer_size)
+            Text::new_color(settings.text_color, timer_size)
                 .draw(
                     &timer_str,
                     glyphs,
@@ -794,10 +927,12 @@ impl NonogramView {
 
             // Dropdown size selection menu.
             let dimensions_size = 25;
-            let dimensions_pos = [settings.dimensions_dropdown_menu_box[0] + 5.0,
+            let dimensions_pos = [
+                settings.dimensions_dropdown_menu_box[0] + 5.0,
                 settings.dimensions_dropdown_menu_box[1]
-                + (settings.dimensions_dropdown_menu_box[3] / 2.0)
-                + ((dimensions_size as f64 * 0.75) / 2.0)];
+                    + (settings.dimensions_dropdown_menu_box[3] / 2.0)
+                    + ((dimensions_size as f64 * 0.75) / 2.0),
+            ];
 
             match controller.dimensions_dropdown_menu {
                 ButtonInteraction::None => {
@@ -848,15 +983,15 @@ impl NonogramView {
                         g,
                     );
 
-                    for dimension in 0..DIMENSIONS_CHOICES.len() {
-                        if controller.dimensions_dropdown_options.0 == dimension {
+                    for (it, value) in DIMENSIONS_CHOICES.iter().enumerate() {
+                        if controller.dimensions_dropdown_options.0 == it {
                             match controller.dimensions_dropdown_options.1 {
                                 ButtonInteraction::None => (),
                                 ButtonInteraction::Hover => {
                                     Rectangle::new(hex("222222")).draw(
                                         settings.dimensions_dropdown_menu_box,
                                         &c.draw_state,
-                                        c.transform.trans(0.0, dimensions_pos[1] * (dimension + 1) as f64),
+                                        c.transform.trans(0.0, dimensions_pos[1] * (it + 1) as f64),
                                         g,
                                     );
                                 }
@@ -864,25 +999,20 @@ impl NonogramView {
                                     Rectangle::new(hex("333333")).draw(
                                         settings.dimensions_dropdown_menu_box,
                                         &c.draw_state,
-                                        c.transform.trans(0.0, dimensions_pos[1] * (dimension + 1) as f64),
+                                        c.transform.trans(0.0, dimensions_pos[1] * (it + 1) as f64),
                                         g,
                                     );
                                 }
                             }
                         }
-                        let dimensions_str = format!(
-                            "{}x{}",
-                            DIMENSIONS_CHOICES[dimension][0], DIMENSIONS_CHOICES[dimension][1]
-                        );
-                        Text::new_color(hex("ffffff"), dimensions_size)
+                        let dimensions_str = format!("{}x{}", value[0], value[1]);
+                        Text::new_color(settings.text_color, dimensions_size)
                             .draw(
                                 &dimensions_str,
                                 glyphs,
                                 &c.draw_state,
-                                c.transform.trans(
-                                    dimensions_pos[0],
-                                    dimensions_pos[1] * (dimension + 2) as f64,
-                                ),
+                                c.transform
+                                    .trans(dimensions_pos[0], dimensions_pos[1] * (it + 2) as f64),
                                 g,
                             )
                             .unwrap_or_else(|_| panic!("text draw failed"));
@@ -895,7 +1025,7 @@ impl NonogramView {
                 controller.nonogram.next_dimensions[0], controller.nonogram.next_dimensions[1]
             );
             let dimensions_size = 25;
-            Text::new_color(hex("ffffff"), dimensions_size)
+            Text::new_color(settings.text_color, dimensions_size)
                 .draw(
                     &dimensions_str,
                     glyphs,
@@ -908,15 +1038,17 @@ impl NonogramView {
             // Draw dropdown arrow.
             // Reference for Material Icons: https://material.io/resources/icons/?style=baseline
             // Reference for unicode character codes: https://github.com/google/material-design-icons/blob/master/iconfont/codepoints
-            let dimensions_dropdown_arrow_str = format!("\u{e5c5}");
+            let dimensions_dropdown_arrow_str = "\u{e5c5}".to_string();
             let dimensions_dropdown_arrow_size = 25;
-            let dimensions_dropdown_arrow_width = material_icons_glyphs.width(
-                dimensions_dropdown_arrow_size,
-                &dimensions_dropdown_arrow_str,
-            ).unwrap_or(0.0);
-            Text::new_color(hex("ffffff"), dimensions_dropdown_arrow_size)
+            let dimensions_dropdown_arrow_width = material_icons_glyphs
+                .width(
+                    dimensions_dropdown_arrow_size,
+                    &dimensions_dropdown_arrow_str,
+                )
+                .unwrap_or(0.0);
+            Text::new_color(settings.text_color, dimensions_dropdown_arrow_size)
                 .draw(
-                    &format!("{}", dimensions_dropdown_arrow_str),
+                    &dimensions_dropdown_arrow_str,
                     material_icons_glyphs,
                     &c.draw_state,
                     c.transform.trans(
@@ -961,7 +1093,7 @@ impl NonogramView {
 
             let restart_str = "RESTART".to_string();
             let restart_size = 25;
-            Text::new_color(hex("ffffff"), restart_size)
+            Text::new_color(settings.text_color, restart_size)
                 .draw(
                     &restart_str,
                     glyphs,
