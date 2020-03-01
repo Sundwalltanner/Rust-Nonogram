@@ -69,6 +69,7 @@ There's not a whole lot to this section. I gave myself a lot of time to work on 
 * The way I'm reading the save file in prevents old save files from being compatible. By old save files, I mean that if I change any of the info that's saved, users will have to delete their current save file in order for the program to run. If I want to add ```number_of_wins``` at some point, old save files without this stat will cause the program to crash.
 * Hint number crossout implementation isn't ideal at the moment.
 * If there are too many column hint numbers, like for a 30x30 nonogram board, they may end up hidden behind the buttons at the top of the window.
+* The random win message isn't saved. This means that if you close the game and it saves while you're on the win screen, and you open the game again, a new random win message will be there. Sorry.
 
 ## Testing
 Testing is pretty barebones largely due to my lack of knowledge in regards to Piston. I currently only have testing implemented for [nonogram_board.rs](https://github.com/Sundwalltanner/Rust-Nonogram/blob/master/src/nonogram_board.rs). 

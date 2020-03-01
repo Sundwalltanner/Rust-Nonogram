@@ -29,7 +29,7 @@ pub enum ButtonInteraction {
 
 /// Determines the columns and rows in a fresh run of the program.
 /// If any save data exists, it will overwrite these values with the most recently used dimensions.
-pub const INITIAL_BOARD_DIMENSIONS: [usize; 2] = [15, 10];
+pub const INITIAL_BOARD_DIMENSIONS: [usize; 2] = [5, 5];
 
 /// Determines the initial window size. Unlike the value for the initial board dimensions,
 /// this is not saved. This will be the initial size of the window every time the program is run.
