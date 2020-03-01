@@ -5,8 +5,8 @@ First and foremost, this is being developed and tested in Windows. If it doesn't
 
 Nonograms, sometimes referred to as Picross, are a type of picture-based numbers puzzle. Basically, you're given a grid with some numbers to the side of each row and column and you have to use that information to determine which boxes in the grid are filled in. Typically the end result is that the filled in blocks form the shape of something. That end result can be in black and white or in color based on the ruleset. [Look, here's a Wikipedia page about nonograms](https://en.wikipedia.org/wiki/Nonogram).
 
-## Why?
-I've been bored riding the MAX for about two hours every day I have class, so I was looking for an entertaining Nintendo Switch game to play. I ended up stumbling across Picross (get it?). A video game developer named Jupiter has made like 100 different Picross games, most of which are exclusive to the Nintendo 3DS. I couldn't ever really get into Sudoku, so I don't really know how similar the two are. It's incredibly addicting though, and it seemed like something I'd be capable of creating in Rust.
+## Why?+
+A video game developer named Jupiter has made like 100 different Picross games, most of which are exclusive to the Nintendo 3DS. I got addicted to [Picross S3](https://www.nintendo.com/games/detail/picross-s3-switch/) for the Nintendo Switch this term, so I wanted to try and make that in Rust.
 
 ## How to install
 First, install Rust by following the directions found here:
@@ -61,7 +61,7 @@ As seen in the win screen image above, the final image of the board is shown to 
 
 Here's a gif of me solving a basic 5x5 Nonogram from start to finish:
 
-![Gif of solving 5x5 Nonogram](https://i.imgur.com/iVJVAHi.gif)
+![Gif of solving 5x5 Nonogram](https://i.imgur.com/wxxDn44.gif)
 
 ## Save progress
 Progress is automatically saved to a file named ```savedata.json``` in the main directory for this project whenever the program is exited. This includes pressing the ```X``` in the top right corner of the window, ```ALT+F4'ing```, killing it with task manager, etc...
