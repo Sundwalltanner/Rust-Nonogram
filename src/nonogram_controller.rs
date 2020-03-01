@@ -475,56 +475,22 @@ impl NonogramController {
             self.nonogram.reset_board = true;
         }
 
-        // Check if "W" key has been released.
-        if let Some(Button::Keyboard(Key::W)) = e.release_args() {
-            if let Some(ind) = self.nonogram.selected_cell {
-                if ind[1] == 0
-                    || ind[1] == self.nonogram.dimensions[1] - 1
-                    || ind[0] == 0
-                    || ind[0] == self.nonogram.dimensions[0] - 1
-                {
-                    self.loop_back = true;
+        match e.release_args() {
+            Some(Button::Keyboard(Key::W))
+            | Some(Button::Keyboard(Key::A))
+            | Some(Button::Keyboard(Key::S))
+            | Some(Button::Keyboard(Key::D)) => {
+                if let Some(ind) = self.nonogram.selected_cell {
+                    if ind[1] == 0
+                        || ind[1] == self.nonogram.dimensions[1] - 1
+                        || ind[0] == 0
+                        || ind[0] == self.nonogram.dimensions[0] - 1
+                    {
+                        self.loop_back = true;
+                    }
                 }
             }
-        }
-
-        // Check if "A" key has been released.
-        if let Some(Button::Keyboard(Key::A)) = e.release_args() {
-            if let Some(ind) = self.nonogram.selected_cell {
-                if ind[1] == 0
-                    || ind[1] == self.nonogram.dimensions[1] - 1
-                    || ind[0] == 0
-                    || ind[0] == self.nonogram.dimensions[0] - 1
-                {
-                    self.loop_back = true;
-                }
-            }
-        }
-
-        // Check if "S" key has been released.
-        if let Some(Button::Keyboard(Key::S)) = e.release_args() {
-            if let Some(ind) = self.nonogram.selected_cell {
-                if ind[1] == 0
-                    || ind[1] == self.nonogram.dimensions[1] - 1
-                    || ind[0] == 0
-                    || ind[0] == self.nonogram.dimensions[0] - 1
-                {
-                    self.loop_back = true;
-                }
-            }
-        }
-
-        // Check if "D" key has been released.
-        if let Some(Button::Keyboard(Key::D)) = e.release_args() {
-            if let Some(ind) = self.nonogram.selected_cell {
-                if ind[1] == 0
-                    || ind[1] == self.nonogram.dimensions[1] - 1
-                    || ind[0] == 0
-                    || ind[0] == self.nonogram.dimensions[0] - 1
-                {
-                    self.loop_back = true;
-                }
-            }
+            _ => (),
         }
 
         // Check if "J" key has been released.
