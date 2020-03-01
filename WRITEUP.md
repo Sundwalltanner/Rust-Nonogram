@@ -7,11 +7,14 @@ Currently, this program features:
 * Randomly generated Nonogram puzzles of varying dimensions.
 * Dropdown menu allowing user to change dimensions of generated board.
 * Button allowing user to generate a new board.
-* Various keybinding functions:
+* Mouse keybindings:
     * ```Left click``` mouse to fill boxes and interact with buttons.
         * Support for ```left click hold``` to dynamically perform functions based on first box interacted with.
     * ```Right click``` mouse to mark boxes.
         * Support for ```right click hold``` to dynamically perform functions based on first box interacted with.
+* Keyboard keybindings:
+    * ```J key``` to fill boxes.
+    * ```K key``` to mark boxes.
     * ```Up key``` to increase dimensions.
     * ```Down key``` to decrease dimensions.
     * ```R key``` to restart and generate a new board.

@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::time::{Duration, Instant};
 
-use crate::common::{Directions};
+use crate::common::Directions;
 
 /// Contains the information we're going to save in between each session.
 #[derive(Serialize, Deserialize)]
@@ -233,7 +233,7 @@ impl NonogramBoard {
     }
 
     /// Change the currently selected cell.
-    /// 
+    ///
     /// Used for keyboard controls. Called by `nonogram_controller`.
     pub fn change_selected(&mut self, direction: Directions) {
         let mut cell = match self.selected_cell {

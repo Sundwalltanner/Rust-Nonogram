@@ -33,8 +33,8 @@ This also means that commands are executed on mouse button down rather than on m
 
 There's also optional keyboard controls:
 * ```WASD``` - Move to a different box on the board.
-* ```E``` - Fill box if clear. Clear box if not clear.
-* ```Q``` - Mark box if clear. Clear box if not clear.
+* ```J``` - Fill box if clear. Clear box if not clear.
+* ```K``` - Mark box if clear. Clear box if not clear.
 * ```R``` - Restart. Generates a new game board. If the board dimensions have been altered, the new board will have those dimensions.
 * ```Up Arrow``` - Increase board dimensions. Press ```R``` to generate a new board with these dimensions.
 * ```Down Arrow``` - Decrease board dimensions. Press ```R``` to generate a new board with these dimensions.
