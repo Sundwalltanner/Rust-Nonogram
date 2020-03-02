@@ -25,6 +25,7 @@ Once you've done all that, you're ready to learn how to play.
 ## Controls
 These are the default controls. They can be easily manipulated by the user, and there will soon be a menu where the user can change the keybindings from within the game.
 
+### Mouse controls
 The mouse controls are fairly basic:
 * ```Left Mouse Click``` - Fill box if clear. Clear box if not clear. Interact with buttons.
 * ```Right Mouse Click``` - Mark box if clear. Clear box if not clear.
@@ -33,6 +34,7 @@ These two mouse buttons can also be held down in order to fill/clear multiple bo
 
 This also means that commands are executed on mouse button down rather than on mouse button release.
 
+### Keyboard controls
 There's also optional keyboard controls:
 * ```WASD``` - Move to a different box on the board.
 * ```J``` - Fill box if clear. Clear box if not clear.
@@ -52,6 +54,7 @@ There are numbers near each column and row of the board. These numbers indicate 
 
 This is the final solution to this particular Nonogram. From glancing at this, we can see that sequences of filled in boxes maintain the same order given by the order of the numbers nearby. We can also see that sequences of filled in boxes need at least one white box of separation. In order to assist you in remembering which boxes cannot be filled in, you can ```right click``` a box in order to mark it with an orange-ish X (cross). You don't need to mark any boxes in order to win. They're just there to help you.
 
+### Winning
 The win condition is based entirely on which boxes you've filled in. Every time you fill or clear a box, the game checks to see if your board state matches that of the winning board. This takes into account the fact that some boards might not have a unique solution.
 
 The progress tracker doesn't indicate correctness. You can fill an incorrect box, and it will still add that box to your progress.
@@ -78,6 +81,9 @@ Eventually this will keep track of wins or something, but for now, it just keeps
 Currently, if I make any updates to what is tracked within savedata.json, if you have an older version of that file, the program will crash and inform you that you need to delete your savedata.json file. I'll try and figure out a way to get around this, but for now, that's just the way it is.
 
 ## What are you still working on?
+Writing code for this project is my current hobby. As soon as this term ends, I'll probably move onto something else. This section helps me keep track of things I need to work on.
+
+### Reasonable future goals
 This isn't due for a few more weeks, so I've probably got plenty of time to hit these stretch goals:
 
 * Fix save state logic. As mentioned above, if a new variable is saved, any old save data will cause the program to crash, and that old save data will need to be deleted. This isn't ideal. Either the program should overwrite the old save data, or we should be capable of at least keeping the save data that's compatible, and trying to concatenate the new variable that is now being saved.
@@ -90,7 +96,7 @@ This isn't due for a few more weeks, so I've probably got plenty of time to hit 
 * Potentially look into generating only unique goal states? This didn't end up being a huge issue, because of the method I'm using to generate the goal state. It will be easy enough to compare the current state to the goal state for win conditions. But it might be worthwhile to look into an algorithm for generating nonogram puzzles with unique goal states, as mine currently has the ability to produce a goal state that can be reached by more than one method.
 * Tests, better comments, make Rust happy, make Clippy happy, etc... There's always stuff to work on...
 
-## Other future goals
+### Other future goals
 These are significantly less likely to be reached by the due date of this project:
 
 * Allow image files to be read in and converted into a board goal state.
