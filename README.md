@@ -12,20 +12,20 @@ A video game developer named Jupiter has made like 100 different Picross games, 
 First, install Rust by following the directions found here:
 https://www.rust-lang.org/tools/install
 
-Once you've got Rust properly installed, clone this repository, navigate to its directly on your machine, and enter this into your terminal:
+Once you've got Rust properly installed, clone this repository, navigate to its directory on your machine, and enter this into your terminal:
 
 ```
 cargo run
 ```
 
-This will install the packages located in the ```Cargo.toml``` file, create an executable out of the files in the ```src``` folder, and execute it. It might take awhile to install the necessary packages. Piston is rather hefty.
+This will install the packages located in the ```Cargo.toml``` file, create an executable out of the files in the ```src``` folder, and execute it. It might take a while to install the necessary packages. Piston is rather hefty.
 
 Once you've done all that, you're ready to learn how to play.
 
 ## Controls
 These are the default controls. They can be easily manipulated by the user, and there will soon be a menu where the user can change the keybindings from within the game.
 
-The mouse controls are really basic:
+The mouse controls are fairly basic:
 * ```Left Mouse Click``` - Fill box if clear. Clear box if not clear. Interact with buttons.
 * ```Right Mouse Click``` - Mark box if clear. Clear box if not clear.
 
