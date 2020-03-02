@@ -23,7 +23,9 @@ This will install the packages located in the ```Cargo.toml``` file, create an e
 Once you've done all that, you're ready to learn how to play.
 
 ## Controls
-The mouse are really basic:
+These are the default controls. They can be easily manipulated by the user, and there will soon be a menu where the user can change the keybindings from within the game.
+
+The mouse controls are really basic:
 * ```Left Mouse Click``` - Fill box if clear. Clear box if not clear. Interact with buttons.
 * ```Right Mouse Click``` - Mark box if clear. Clear box if not clear.
 
