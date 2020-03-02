@@ -11,19 +11,41 @@ use crate::nonogram_board::NonogramBoard;
 
 /// Handles nonogram keybindings.
 pub struct NonogramControls {
+    /// Keybinding for filling the cell that the mouse cursor is hovering over.
     pub mouse_fill: Button,
+
+    /// Keybinding for marking the cell that the mouse cursor is hovering over.
     pub mouse_mark: Button,
+
+    /// Keybinding for moving the selected cell focus up.
     pub move_up: Button,
+
+    /// Keybinding for moving the selected cell focus down.
     pub move_down: Button,
+
+    /// Keybinding for moving the selected cell focus left.
     pub move_left: Button,
+
+    /// Keybinding for moving the selected cell focus right.
     pub move_right: Button,
+
+    /// Keybinding for filling the currently selected cell.
     pub key_fill: Button,
+
+    /// Keybinding for marking the currently selected cell.
     pub key_mark: Button,
+
+    /// Keybinding for generating a new board and starting from scratch.
     pub restart: Button,
+
+    /// Keybinding for increasing the dimensions of the next board to be generated.
     pub dim_up: Button,
+
+    /// Keybinding for decreasing the dimensions of the next board to be generated.
     pub dim_down: Button,
 }
 
+/// Default implementation for NonogramControls.
 impl Default for NonogramControls {
     /// Creates new control handler.
     fn default() -> Self {
@@ -82,6 +104,7 @@ pub struct NonogramController {
     pub new_game_button: ButtonInteraction,
 }
 
+/// Implementation for NonogramController.
 impl NonogramController {
     /// Creates a new nonogram controller.
     pub fn new(nonogram: NonogramBoard) -> NonogramController {

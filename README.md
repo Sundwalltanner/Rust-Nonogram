@@ -3,7 +3,7 @@
 
 First and foremost, this is being developed and tested in Windows. If it doesn't work on another platform, I'm sorry. At the very least, I'll try to get around to testing it in Linux. It should work fine, but I can't be certain until I've tried, and I haven't.
 
-Nonograms, sometimes referred to as Picross, are a type of picture-based numbers puzzle. Basically, you're given a grid with some numbers to the side of each row and column and you have to use that information to determine which boxes in the grid are filled in. Typically the end result is that the filled in blocks form the shape of something. That end result can be in black and white or in color based on the ruleset. [Look, here's a Wikipedia page about nonograms](https://en.wikipedia.org/wiki/Nonogram).
+Nonograms, sometimes referred to as Picross (I don't know what the plural form of this is), are a type of picture-based numbers puzzle. Basically, you're given a grid with some numbers to the side of each row and column and you have to use that information to determine which boxes in the grid are filled in. Typically the end result is that the filled in boxes form the shape of something. That end result can be in black and white or in color based on the ruleset. [Look, here's a Wikipedia page about nonograms](https://en.wikipedia.org/wiki/Nonogram). Mine only uses the black and white ruleset for now.
 
 ## Why?
 A video game developer named Jupiter has made like 100 different Picross games, most of which are exclusive to the Nintendo 3DS. I got addicted to [Picross S3](https://www.nintendo.com/games/detail/picross-s3-switch/) for the Nintendo Switch this term, so I wanted to try and make that in Rust.
@@ -80,12 +80,21 @@ Currently, if I make any updates to what is tracked within savedata.json, if you
 ## What are you still working on?
 This isn't due for a few more weeks, so I've probably got plenty of time to hit these stretch goals:
 
+* Fix save state logic. As mentioned above, if a new variable is saved, any old save data will cause the program to crash, and that old save data will need to be deleted. This isn't ideal. Either the program should overwrite the old save data, or we should be capable of at least keeping the save data that's compatible, and trying to concatenate the new variable that is now being saved.
 * Pause menu with buttons:
-    * Resume - resumes the game in progress.
-    * How to Play - Tries to tell the user how to play the game. Tell them what the keybindings are.
-    * Quit - exit the game.
+    * Resume - Resume the game in progress.
+    * How to Play - Tries to tell the user how to play the game.
+    * Edit Keybindings - Tells the user what the current keybindings are and allows them to rebind actions to different keys.
+    * Quit - Exit the game.
+* Adapt locations and sizes of everything to window size. Right now everything is static.
 * Potentially look into generating only unique goal states? This didn't end up being a huge issue, because of the method I'm using to generate the goal state. It will be easy enough to compare the current state to the goal state for win conditions. But it might be worthwhile to look into an algorithm for generating nonogram puzzles with unique goal states, as mine currently has the ability to produce a goal state that can be reached by more than one method.
 * Tests, better comments, make Rust happy, make Clippy happy, etc... There's always stuff to work on...
+
+## Other future goals
+These are significantly less likely to be reached by the due date of this project:
+
+* Allow image files to be read in and converted into a board goal state.
+* Allow the user to play the color version as well. The ruleset of this is that there's basically more colors than black and white, hint numbers indicate color, and segments of different colors don't need whitespace to separate them. There's a lot more to it than that, and it would require quite a bit of work.
 
 ## References
 These are URLs dropped in throughout the code's comments, gathered in one place for my convenience:

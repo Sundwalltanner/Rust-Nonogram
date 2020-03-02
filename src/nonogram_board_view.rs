@@ -102,6 +102,7 @@ pub struct NonogramViewSettings {
     pub win_critique: String,
 }
 
+/// Implementation for NonogramViewSettings.
 impl NonogramViewSettings {
     /// Creates new nonogram view settings.
     pub fn new(new_cell_dimensions: [usize; 2]) -> NonogramViewSettings {
