@@ -86,3 +86,11 @@ This isn't due for a few more weeks, so I've probably got plenty of time to hit 
     * Quit - exit the game.
 * Potentially look into generating only unique goal states? This didn't end up being a huge issue, because of the method I'm using to generate the goal state. It will be easy enough to compare the current state to the goal state for win conditions. But it might be worthwhile to look into an algorithm for generating nonogram puzzles with unique goal states, as mine currently has the ability to produce a goal state that can be reached by more than one method.
 * Tests, better comments, make Rust happy, make Clippy happy, etc... There's always stuff to work on...
+
+## References
+These are URLs dropped in throughout the code's comments, gathered in one place for my convenience:
+
+* Material icons: https://material.io/resources/icons/?style=baseline
+* Unicode character codes: https://github.com/google/material-design-icons/blob/master/iconfont/codepoints
+* Hex code color transparency: https://css-tricks.com/8-digit-hex-codes/
+* Piston input ```GenericEvent``` traits: https://docs.rs/piston/0.49.0/piston/index.html#traits

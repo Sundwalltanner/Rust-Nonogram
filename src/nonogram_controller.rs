@@ -9,7 +9,7 @@ use std::path::Path;
 use crate::common::{ButtonInteraction, Directions, DIMENSIONS_CHOICES};
 use crate::nonogram_board::NonogramBoard;
 
-/// Handles Nonogram keybindings.
+/// Handles nonogram keybindings.
 pub struct NonogramControls {
     pub mouse_fill: Button,
     pub mouse_mark: Button,
@@ -86,7 +86,7 @@ impl NonogramController {
     /// Creates a new nonogram controller.
     pub fn new(nonogram: NonogramBoard) -> NonogramController {
         NonogramController {
-            controls: NonogramControls::default(),
+            controls: Default::default(),
             nonogram,
             cursor_pos: [0.0; 2],
             mouse_d: [false; 2],
