@@ -14,6 +14,8 @@
 //! [INITIAL_BOARD_DIMENSIONS]: constant.INITIAL_BOARD_DIMENSIONS.html
 //! [INITIAL_WINDOW_SIZE]: constant.INITIAL_WINDOW_SIZE.html
 
+use serde::{Deserialize, Serialize};
+
 /// Determines the current status of an interactable button.
 #[derive(PartialEq)]
 pub enum ButtonInteraction {
@@ -33,6 +35,20 @@ pub enum Directions {
     Down,
     Left,
     Right,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+/// Determines the current status of a single cell in the nonogram board.
+pub enum Cell {
+    /// The cell appears white. This is a cell's default state.
+    Empty,
+
+    /// The cell appears black-ish.
+    Filled,
+
+    /// The cell has a big orange-ish X in it. These are not required to reach a win state.
+    /// These exist solely to assist the user in identifying cells they know aren't going to be filled.
+    Marked,
 }
 
 /// Determines the columns and rows in a fresh run of the program.

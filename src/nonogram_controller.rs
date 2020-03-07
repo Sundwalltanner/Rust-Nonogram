@@ -6,7 +6,7 @@ use std::error::Error;
 use std::fs::File;
 use std::path::Path;
 
-use crate::common::{ButtonInteraction, Directions, DIMENSIONS_CHOICES};
+use crate::common::{ButtonInteraction, Cell, Directions, DIMENSIONS_CHOICES};
 use crate::nonogram_board::NonogramBoard;
 
 /// Handles nonogram keybindings.
@@ -89,7 +89,7 @@ pub struct NonogramController {
     board_d: bool,
 
     /// Stores current cell type being manipulated (empty, filled, marked).
-    current_action: u8,
+    current_action: Cell,
 
     /// Current status of dimensions dropdown menu.
     pub dimensions_dropdown_menu: ButtonInteraction,
@@ -116,7 +116,7 @@ impl NonogramController {
             key_d: [false; 2],
             loop_back: false,
             board_d: false,
-            current_action: 0,
+            current_action: Cell::Empty,
             dimensions_dropdown_menu: ButtonInteraction::None,
             dimensions_dropdown_options: (0, ButtonInteraction::None),
             restart_button: ButtonInteraction::None,
@@ -190,37 +190,6 @@ impl NonogramController {
                     self.new_game_button = ButtonInteraction::None;
                 }
             }
-
-            if let Some(_window_closed) = e.close_args() {
-                let path = Path::new("savedata.json");
-                let display = path.display();
-
-                let file = match File::create(&path) {
-                    Err(why) => panic!("couldn't create {}: {}", display, why.description()),
-                    Ok(file) => file,
-                };
-
-                // Serialize it to a JSON string.
-                //let j = serde_json::to_string(&self.nonogram.goal_nums);
-
-                //println!("{:?}", j);
-                let save_data = json!({
-                    "dimensions": self.nonogram.dimensions,
-                    "next_dimensions": self.nonogram.next_dimensions,
-                    "data": self.nonogram.data,
-                    "goal_nums": self.nonogram.goal_nums,
-                    "count_black": self.nonogram.count_black,
-                    "goal_black": self.nonogram.goal_black,
-                    "duration": self.nonogram.duration,
-                });
-
-                match serde_json::to_writer_pretty(file, &save_data) {
-                    Err(why) => panic!("couldn't write to {}: {}", display, why.description()),
-                    Ok(_) => println!("successfully wrote to {}", display),
-                }
-
-                println!("Nonogram game closed. Progress has been successfully saved.");
-            }
         } else {
             // Check if mouse button has been moved within window and save its location to pos: [f64; 2]
             if let Some(pos) = e.mouse_cursor_args() {
@@ -275,9 +244,9 @@ impl NonogramController {
                             && self.board_d
                         {
                             if self.mouse_d[0] {
-                                self.nonogram.set([cell_x, cell_y], 1);
+                                self.nonogram.set([cell_x, cell_y], Cell::Filled);
                             } else if self.mouse_d[1] {
-                                self.nonogram.set([cell_x, cell_y], 2);
+                                self.nonogram.set([cell_x, cell_y], Cell::Marked);
                             }
                         }
                     }
@@ -425,9 +394,9 @@ impl NonogramController {
                 if let Some(ind) = self.nonogram.selected_cell {
                     if self.nonogram.get(ind) == self.current_action {
                         if self.key_d[0] {
-                            self.nonogram.set(ind, 1);
+                            self.nonogram.set(ind, Cell::Filled);
                         } else if self.key_d[1] {
-                            self.nonogram.set(ind, 2);
+                            self.nonogram.set(ind, Cell::Marked);
                         }
                     }
                 }
@@ -438,7 +407,7 @@ impl NonogramController {
                 self.key_d[0] = true;
                 if let Some(ind) = self.nonogram.selected_cell {
                     self.current_action = self.nonogram.get(ind);
-                    self.nonogram.set(ind, 1);
+                    self.nonogram.set(ind, Cell::Filled);
                 }
             }
 
@@ -447,7 +416,7 @@ impl NonogramController {
                 self.key_d[1] = true;
                 if let Some(ind) = self.nonogram.selected_cell {
                     self.current_action = self.nonogram.get(ind);
-                    self.nonogram.set(ind, 2);
+                    self.nonogram.set(ind, Cell::Marked);
                 }
             }
         }
@@ -486,11 +455,11 @@ impl NonogramController {
             });
 
             match serde_json::to_writer_pretty(file, &save_data) {
-                Err(why) => panic!("couldn't write to {}: {}", display, why.description()),
-                Ok(_) => println!("successfully wrote to {}", display),
+                Err(why) => panic!("Couldn't write to {}: {}", display, why.description()),
+                Ok(_) => println!("Successfully wrote to {}", display),
             }
 
-            println!("Nonogram game closed. Progress has been successfully saved.");
+            println!("Nonogram game closed.");
         }
 
         // Check if restart key has been released.

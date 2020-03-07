@@ -81,10 +81,10 @@ Eventually this will keep track of wins or something, but for now, it just keeps
 Currently, if I make any updates to what is tracked within savedata.json, if you have an older version of that file, the program will crash and inform you that you need to delete your savedata.json file. I'll try and figure out a way to get around this, but for now, that's just the way it is.
 
 ## What are you still working on?
-Writing code for this project is my current hobby. As soon as this term ends, I'll probably move onto something else. This section helps me keep track of things I need to work on.
+Writing code for this project was a hobby during my last school term. I might come back and revisit it to work on some of these features, but who knows?
 
 ### Reasonable future goals
-This isn't due for a few more weeks, so I've probably got plenty of time to hit these stretch goals:
+Features that are likely to be added in the future:
 
 * Fix save state logic. As mentioned above, if a new variable is saved, any old save data will cause the program to crash, and that old save data will need to be deleted. This isn't ideal. Either the program should overwrite the old save data, or we should be capable of at least keeping the save data that's compatible, and trying to concatenate the new variable that is now being saved.
 * Pause menu with buttons:
@@ -93,8 +93,9 @@ This isn't due for a few more weeks, so I've probably got plenty of time to hit 
     * Edit Keybindings - Tells the user what the current keybindings are and allows them to rebind actions to different keys.
     * Quit - Exit the game.
 * Adapt locations and sizes of everything to window size. Right now everything is static.
+* Leaderboards and better stat tracking. Currently, there's no real incentive to complete a board quickly. Wins aren't kept track of either, so despite save data being saved, a user doesn't no how many board completions they have in total. This would be easy enough to add, but I haven't figured out a place to make this stat available to look at. This might look nice in a "stats" section in the proposed pause menu I have above.
 * Potentially look into generating only unique goal states? This didn't end up being a huge issue, because of the method I'm using to generate the goal state. It will be easy enough to compare the current state to the goal state for win conditions. But it might be worthwhile to look into an algorithm for generating nonogram puzzles with unique goal states, as mine currently has the ability to produce a goal state that can be reached by more than one method.
-* Tests, better comments, make Rust happy, make Clippy happy, etc... There's always stuff to work on...
+* Tests, better comments, better documentation, make Rust happy, make Clippy happy, etc... There's always stuff to work on...
 
 ### Other future goals
 These are significantly less likely to be reached by the due date of this project:

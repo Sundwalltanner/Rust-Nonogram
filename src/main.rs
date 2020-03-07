@@ -33,6 +33,7 @@ fn main() {
         NonogramViewSettings::new(nonogram_controller.nonogram.dimensions);
     let mut nonogram_view = NonogramView::new(nonogram_view_settings);
 
+    // Everything necessary for the variants fonts to work.
     let assets = find_folder::Search::ParentsThenKids(3, 3)
         .for_folder("assets")
         .unwrap();
@@ -46,6 +47,8 @@ fn main() {
     let material_icons_font = &assets.join("MaterialIcons-Regular.ttf");
     let material_icons_glyphs = &mut GlyphCache::new(material_icons_font, (), texture_settings)
         .expect("Could not load MaterialIcons-Regular.ttf");
+
+    println!("Nonogram game started.");
 
     while let Some(e) = events.next(&mut window) {
         nonogram_controller.event(
@@ -80,6 +83,12 @@ fn main() {
                 );
             });
         }
+
+        // The board is reset when pressing the key bound to "restart", clicking the "restart" button
+        // while a board is loaded, or when clicking the "new game" button when on the win screen.
+        //
+        // Resetting the board causes it to wipe the current state, potentially create a new board with different
+        // dimensions than the current board depending on the user's choice, and generate a new goal state.
         if nonogram_controller.nonogram.reset_board {
             nonogram_controller.nonogram = nonogram_board::NonogramBoard::new(
                 nonogram_controller.nonogram.next_dimensions,

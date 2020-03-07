@@ -5,14 +5,14 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::time::{Duration, Instant};
 
-use crate::common::Directions;
+use crate::common::{Cell, Directions};
 
 /// Contains the information we're going to save in between each session.
 #[derive(Serialize, Deserialize)]
 pub struct SavedBoard {
     pub dimensions: [usize; 2],
     pub next_dimensions: [usize; 2],
-    pub data: Vec<Vec<u8>>,
+    pub data: Vec<Vec<Cell>>,
     pub goal_nums: Vec<Vec<Vec<i8>>>,
     pub count_black: u64,
     pub goal_black: u64,
@@ -30,8 +30,8 @@ pub struct NonogramBoard {
 
     /// Contains all cell data of the current nonogram board.
     ///
-    /// A cell can be empty(0), filled(1), or marked(2).
-    pub data: Vec<Vec<u8>>,
+    /// A cell can be empty, filled, or marked.
+    pub data: Vec<Vec<Cell>>,
 
     /// The maximum hint numbers for the columns and rows depending on the board dimensions.
     ///
@@ -129,7 +129,7 @@ impl NonogramBoard {
         // If there is no save data file or if we're generating a brand-new board.
         if save_data.is_empty() || self.reset_board {
             for _col in 0..self.dimensions[0] {
-                self.data.push(vec![0; self.dimensions[1]]);
+                self.data.push(vec![Cell::Empty; self.dimensions[1]]);
             }
 
             self.nums_per[0] = (self.dimensions[1] as f64 / 2.0_f64).round() as u64;
@@ -184,14 +184,14 @@ impl NonogramBoard {
     }
 
     /// Set cell value.
-    pub fn set(&mut self, ind: [usize; 2], val: u8) {
-        if self.data[ind[0]][ind[1]] != 0 {
-            if self.data[ind[0]][ind[1]] == 1 && self.count_black != 0 {
+    pub fn set(&mut self, ind: [usize; 2], val: Cell) {
+        if self.data[ind[0]][ind[1]] != Cell::Empty {
+            if self.data[ind[0]][ind[1]] == Cell::Filled && self.count_black != 0 {
                 self.count_black -= 1;
             }
-            self.data[ind[0]][ind[1]] = 0;
+            self.data[ind[0]][ind[1]] = Cell::Empty;
         } else {
-            if val == 1 {
+            if val == Cell::Filled {
                 self.count_black += 1;
             }
             self.data[ind[0]][ind[1]] = val;
@@ -206,7 +206,7 @@ impl NonogramBoard {
     }
 
     /// Get cell value.
-    pub fn get(&self, ind: [usize; 2]) -> u8 {
+    pub fn get(&self, ind: [usize; 2]) -> Cell {
         self.data[ind[0]][ind[1]]
     }
 
@@ -216,7 +216,7 @@ impl NonogramBoard {
         for col in 0..self.dimensions[0] {
             for row in 0..self.dimensions[1] {
                 if rng.sample(&mut rand::thread_rng()) {
-                    self.data[col][row] = 1;
+                    self.data[col][row] = Cell::Filled;
                     self.goal_black += 1;
                 }
             }
@@ -227,7 +227,7 @@ impl NonogramBoard {
     pub fn wipe_board(&mut self) {
         for col in 0..self.dimensions[0] {
             for row in 0..self.dimensions[1] {
-                self.data[col][row] = 0;
+                self.data[col][row] = Cell::Empty;
             }
         }
     }
@@ -286,7 +286,7 @@ impl NonogramBoard {
             let mut num_hint = 0;
             let mut filling = false;
             for row in 0..self.dimensions[1] {
-                if self.data[col][row] == 1 {
+                if self.data[col][row] == Cell::Filled {
                     if !filling {
                         filling = true;
                     }
@@ -303,7 +303,7 @@ impl NonogramBoard {
             let mut num_hint = 0;
             let mut filling = false;
             for col in 0..self.dimensions[0] {
-                if self.data[col][row] == 1 {
+                if self.data[col][row] == Cell::Filled {
                     if !filling {
                         filling = true;
                     }
@@ -442,11 +442,16 @@ mod tests {
     fn test_set() {
         let mut nonogram = NonogramBoard::new([5, 5], true);
         assert_eq!(
-            nonogram.data[4][4], 0,
+            nonogram.data[4][4],
+            Cell::Empty,
             "Data is initialized as 0, or empty."
         );
-        nonogram.set([4, 4], 1);
-        assert_eq!(nonogram.data[4][4], 1, "Used set() to change value to 1.");
+        nonogram.set([4, 4], Cell::Filled);
+        assert_eq!(
+            nonogram.data[4][4],
+            Cell::Filled,
+            "Used set() to change value to 1."
+        );
     }
 
     #[test]
@@ -454,10 +459,10 @@ mod tests {
         let mut nonogram = NonogramBoard::new([5, 5], true);
         assert_eq!(
             nonogram.get([4, 4]),
-            0,
+            Cell::Empty,
             "Data is initialized as 0, or empty."
         );
-        nonogram.data[4][4] = 1;
-        assert_eq!(nonogram.get([4, 4]), 1, "Changed value to 1.");
+        nonogram.data[4][4] = Cell::Filled;
+        assert_eq!(nonogram.get([4, 4]), Cell::Filled, "Changed value to 1.");
     }
 }

@@ -6,7 +6,9 @@ use graphics::types::Color;
 use graphics::{Context, Graphics};
 use rand::seq::SliceRandom;
 
-use crate::common::{ButtonInteraction, BOARD_SIZE, DIMENSIONS_CHOICES, IMAGE_NAMES, IMAGE_PRE};
+use crate::common::{
+    ButtonInteraction, Cell, BOARD_SIZE, DIMENSIONS_CHOICES, IMAGE_NAMES, IMAGE_PRE,
+};
 use crate::NonogramController;
 
 #[derive(Default)]
@@ -492,7 +494,7 @@ impl NonogramView {
                         col as f64 * settings.win_cell_size,
                         row as f64 * settings.win_cell_size,
                     ];
-                    if value == 1 {
+                    if value == Cell::Filled {
                         let cell_rect = [
                             board_rect[0] + pos[0],
                             board_rect[1] + pos[1],
@@ -541,7 +543,7 @@ impl NonogramView {
                         col as f64 * settings.cell_size,
                         row as f64 * settings.cell_size,
                     ];
-                    if value == 1 {
+                    if value == Cell::Filled {
                         let cell_rect = [
                             settings.position[0] + pos[0],
                             settings.position[1] + pos[1],
@@ -554,7 +556,7 @@ impl NonogramView {
                             c.transform,
                             g,
                         );
-                    } else if value == 2 {
+                    } else if value == Cell::Marked {
                         mark_text
                             .draw(
                                 "x",
