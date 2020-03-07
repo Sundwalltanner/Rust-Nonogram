@@ -98,7 +98,7 @@ Features that are likely to be added in the future:
 * Tests, better comments, better documentation, make Rust happy, make Clippy happy, etc... There's always stuff to work on...
 
 ### Other future goals
-These are significantly less likely to be reached by the due date of this project:
+These are significantly less likely to be added, but it's worth putting them in this list just in case:
 
 * Allow image files to be read in and converted into a board goal state.
 * Allow the user to play the color version as well. The ruleset of this is that there's basically more colors than black and white, hint numbers indicate color, and segments of different colors don't need whitespace to separate them. There's a lot more to it than that, and it would require quite a bit of work.
