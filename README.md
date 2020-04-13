@@ -1,4 +1,5 @@
 # Rust-Nonogram
+![Rust](https://github.com/Sundwalltanner/Rust-Nonogram/workflows/Rust/badge.svg?branch=master)
 [![license](http://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/Sundwalltanner/Rust-Nonogram/blob/master/LICENSE)
 
 First and foremost, this is being developed and tested in Windows. If it doesn't work on another platform, I'm sorry. At the very least, I'll try to get around to testing it in Linux. It should work fine, but I can't be certain until I've tried, and I haven't.
