@@ -10,6 +10,11 @@ Nonograms, sometimes referred to as Picross (I don't know what the plural form o
 A video game developer named Jupiter has made like 100 different Picross games, most of which are exclusive to the Nintendo 3DS. I got addicted to [Picross S3](https://www.nintendo.com/games/detail/picross-s3-switch/) for the Nintendo Switch this term, so I wanted to try and make that in Rust.
 
 ## How to install
+If you're on Windows, download the first ```.zip``` file on the [releases](https://github.com/Sundwalltanner/Rust-Nonogram/releases) page, unzip it, and run the ```.exe``` in there.
+
+If you're not on Windows, you'll have to jump through some extra hoops.
+
+### (Optional) Compile and run it yourself
 First, install Rust by following the directions found here:
 https://www.rust-lang.org/tools/install
 
